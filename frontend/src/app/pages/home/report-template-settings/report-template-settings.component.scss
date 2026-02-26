@@ -1,0 +1,116 @@
+/* MD3-стиль в духе home: section-title, card, loading */
+.report-template-settings {
+  padding: 0 0 1.5rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 0.75rem;
+  color: var(--tui-text-02, #666);
+}
+
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.loading-label {
+  font-size: 0.875rem;
+  color: var(--tui-text-02, #666);
+}
+
+.tab-panel--empty {
+  padding: 1rem 0;
+  color: var(--tui-text-02, #666);
+  font-size: 0.9375rem;
+}
+
+.error {
+  margin: 1rem 0;
+  color: var(--tui-negative, #e53935);
+  font-size: 0.9375rem;
+}
+
+.template-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card {
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  background-color: rgb(246, 247, 248);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+
+  &[tuiSurface] {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background-color: rgb(246, 247, 248);
+  }
+
+  &:hover {
+    background-color: rgb(236, 239, 242);
+  }
+
+  .card-name {
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  &--edit {
+    flex-wrap: nowrap;
+  }
+}
+
+.template-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tui-border-normal, #ddd);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  background: var(--tui-background-base, #fff);
+
+  &:focus {
+    outline: none;
+    border-color: var(--tui-primary, #0066ff);
+  }
+}
+
+.template-add {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.template-add__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--tui-text-02, #666);
+}
+
+.template-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tui-border-normal, #ddd);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  min-width: 200px;
+  background: var(--tui-background-base, #fff);
+}
+
+.template-actions {
+  display: flex;
+  gap: 0.5rem;
+}

@@ -62,14 +62,14 @@ export class TeamLeadTimePluginComponent
 
   override defaultPrompt = TEAM_LEAD_TIME_DEFAULT_PROMPT;
 
-  @Input() prompt: string | null = null;
+  @Input() override prompt: string | null = null;
 
   /** Данные для графика (JSON); по умолчанию — мок */
   @Input() chartData: LeadTimeDataPoint[] = MOCK_LEAD_TIME_DATA;
 
   @ViewChild('pluginBase') private pluginBase!: ReportPluginBaseComponent;
 
-  getChartSnapshot(): Promise<string> {
+  override getChartSnapshot(): Promise<string> {
     return this.pluginBase.getChartSnapshot();
   }
 }

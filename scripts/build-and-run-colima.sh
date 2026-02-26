@@ -25,19 +25,34 @@ log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
 check_cmd() { command -v "$1" &>/dev/null; }
 
-# --- Проверка Colima ---
+# --- Проверка Colima и доступности Docker ---
 ensure_colima_running() {
   if ! check_cmd colima; then
     log_error "Colima не установлен. Сначала выполните: ./scripts/setup-env-mac.sh"
     exit 1
   fi
-  if colima status &>/dev/null; then
+  if ! colima status &>/dev/null; then
+    log_warn "Colima не запущен. Запуск..."
+    colima start
+    log_info "Colima запущен."
+  else
     log_info "Colima уже запущен."
-    return 0
   fi
-  log_warn "Colima не запущен. Запуск..."
-  colima start
-  log_info "Colima запущен."
+  # Контекст Docker должен указывать на Colima
+  if docker context show &>/dev/null && [[ "$(docker context show)" != "colima" ]]; then
+    log_info "Переключение Docker context на colima..."
+    docker context use colima
+  fi
+  if ! docker info &>/dev/null; then
+    log_error "Docker не отвечает (Cannot connect to the Docker daemon)."
+    echo ""
+    echo "  Попробуйте перезапустить Colima:"
+    echo "    colima stop"
+    echo "    colima start"
+    echo ""
+    echo "  Затем снова: ./scripts/build-and-run-colima.sh"
+    exit 1
+  fi
 }
 
 # --- Команда compose ---
@@ -73,9 +88,14 @@ main() {
   cd "${PROJECT_ROOT}"
   log_info "Остановка контейнеров проекта (если запущены): ${cmd} down"
   eval "${cmd} down" 2>/dev/null || true
-  log_info "Сборка и запуск: ${cmd} up --build ${detach}"
+  # Сборка по очереди, чтобы избежать EOF при параллельной сборке (нехватка памяти BuildKit)
+  log_info "Сборка backend..."
+  eval "${cmd} build backend"
+  log_info "Сборка frontend..."
+  eval "${cmd} build frontend"
+  log_info "Запуск контейнеров: ${cmd} up ${detach}"
   echo ""
-  eval "${cmd} up --build ${detach}"
+  eval "${cmd} up ${detach}"
 }
 
 main "$@"

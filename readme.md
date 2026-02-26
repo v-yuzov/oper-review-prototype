@@ -67,6 +67,17 @@ oper-review-prototype/
 
 Если при `docker-compose up --build` появляются ошибки **docker-credential-desktop** или **buildx plugin**: перезапустите подготовку окружения `./scripts/setup-env-mac.sh` (скрипт поправит config.json и установит buildx). Либо вручную: `brew install docker-buildx docker-credential-helper` и в `~/.docker/config.json` заменить `"credsStore": "desktop"` на `"osxkeychain"`.
 
+**Ошибка `failed to receive status: rpc error: ... error reading from server: EOF`** при сборке обычно связана с обрывом соединения с BuildKit при параллельной сборке (таймаут или нехватка памяти). Решение: собирать образы по очереди, затем поднимать контейнеры:
+```bash
+docker compose build backend && docker compose build frontend && docker compose up -d
+```
+Либо увеличить память для Colima/Docker (например, в Colima: `colima stop` → настройки → больше RAM/CPU) и повторить `docker compose up --build`.
+
+**Ошибка `Could not download ... Could not GET ... repo.maven.apache.org` / `Name or service not known`** при сборке backend — контейнер не имеет доступа в интернет или не резолвит Maven Central. Что проверить:
+1. Сеть Colima: после `colima start` проверьте с хоста `ping repo.maven.apache.org` или откройте в браузере https://repo.maven.apache.org — если с хоста не работает, в контейнере тоже не будет.
+2. VPN/прокси: отключите VPN или настройте прокси для Docker (переменные окружения в Dockerfile или docker-compose).
+3. Обходной путь — собрать backend на хосте и не тянуть зависимости в Docker: в `backend/` выполнить `./gradlew installDist`, затем собрать только frontend: `docker compose build frontend && docker compose up -d` — backend при этом не пересоберётся; для полной пересборки backend нужна сеть в Docker.
+
 Локальная разработка без Docker:
 - Backend: в `backend/` при первом запуске сгенерируйте wrapper: `gradle wrapper --gradle-version 9.0`, затем `./gradlew run`. Либо собирайте через Docker.
 - Frontend: `cd frontend && npm install && npm start`

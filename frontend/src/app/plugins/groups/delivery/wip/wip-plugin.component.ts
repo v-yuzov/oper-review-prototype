@@ -64,14 +64,14 @@ export class WipPluginComponent
 
   override defaultPrompt = WIP_DEFAULT_PROMPT;
 
-  @Input() prompt: string | null = null;
+  @Input() override prompt: string | null = null;
 
   /** Данные для графика (JSON); по умолчанию — мок */
   @Input() chartData: WipDataPoint[] = MOCK_WIP_DATA;
 
   @ViewChild('pluginBase') private pluginBase!: ReportPluginBaseComponent;
 
-  getChartSnapshot(): Promise<string> {
+  override getChartSnapshot(): Promise<string> {
     return this.pluginBase.getChartSnapshot();
   }
 }

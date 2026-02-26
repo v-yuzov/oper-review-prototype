@@ -9,7 +9,6 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import type { Chart } from 'chart.js/auto';
 import type { LeadTimeDataPoint } from './lead-time-data';
 
 /** Цвета линий: медиана, 85%, 95% */
@@ -49,7 +48,7 @@ export class TeamLeadTimeChartComponent
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  private chart: Chart | null = null;
+  private chart: unknown = null;
 
   ngAfterViewInit(): void {
     this.initChart();
@@ -62,7 +61,8 @@ export class TeamLeadTimeChartComponent
   }
 
   ngOnDestroy(): void {
-    this.chart?.destroy();
+    const c = this.chart as { destroy?: () => void } | null;
+    if (c?.destroy) c.destroy();
     this.chart = null;
   }
 
@@ -115,7 +115,8 @@ export class TeamLeadTimeChartComponent
           },
           tooltip: {
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} дн.`,
+              label: (ctx: { dataset: { label?: string }; parsed: { y: number } }) =>
+                `${ctx.dataset.label ?? ''}: ${ctx.parsed.y} дн.`,
             },
           },
         },
@@ -124,7 +125,7 @@ export class TeamLeadTimeChartComponent
             title: { display: false },
             ticks: {
               maxRotation: 45,
-              callback: (_, i) => labels[i] ?? '',
+              callback: (_: unknown, i: number) => labels[i] ?? '',
             },
           },
           y: {
@@ -135,7 +136,8 @@ export class TeamLeadTimeChartComponent
             },
             ticks: {
               stepSize: 1,
-              callback: (value) => (typeof value === 'number' ? String(value) : value),
+              callback: (value: number | string) =>
+                typeof value === 'number' ? String(value) : value,
             },
           },
         },
@@ -144,13 +146,17 @@ export class TeamLeadTimeChartComponent
   }
 
   private updateChartData(): void {
-    if (!this.chart) return;
+    const c = this.chart as {
+      data: { labels: string[]; datasets: { data: number[] }[] };
+      update: () => void;
+    } | null;
+    if (!c) return;
     const labels = this.chartData.map((d) => this.formatMonthLabel(d.date));
-    this.chart.data.labels = labels;
-    this.chart.data.datasets[0].data = this.chartData.map((d) => d.median);
-    this.chart.data.datasets[1].data = this.chartData.map((d) => d.percentile_85);
-    this.chart.data.datasets[2].data = this.chartData.map((d) => d.percentile_95);
-    this.chart.update();
+    c.data.labels = labels;
+    c.data.datasets[0].data = this.chartData.map((d) => d.median);
+    c.data.datasets[1].data = this.chartData.map((d) => d.percentile_85);
+    c.data.datasets[2].data = this.chartData.map((d) => d.percentile_95);
+    c.update();
   }
 
   /** Формат подписи оси X: 2025.12, 2026.01 */

@@ -1,0 +1,73 @@
+<div class="report-template-settings">
+  <h2 class="section-title">Шаблон отчёта</h2>
+
+  @if (loading()) {
+    <div class="loading-wrap" aria-busy="true">
+      <tui-loader size="xl" [showLoader]="true"></tui-loader>
+      <span class="loading-label">Загрузка…</span>
+    </div>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else if (!editing()) {
+    @if (template() === null) {
+      <p class="tab-panel--empty">Шаблон не задан.</p>
+    } @else {
+      <ul class="template-list">
+        @for (plugin of editingPlugins(); track $index) {
+          <li class="card" tuiSurface>
+            <span class="card-name">{{ getDisplayTitle(plugin, $index) }}</span>
+          </li>
+        }
+      </ul>
+    }
+    <button tuiButton appearance="secondary" size="s" (click)="startEdit()">
+      Редактировать
+    </button>
+  } @else {
+    <ul class="template-list">
+      @for (plugin of editingPlugins(); track $index) {
+        <li class="card card--edit" tuiSurface>
+          <input
+            type="text"
+            class="template-input"
+            [value]="plugin.customTitle ?? getDefaultLabel(plugin.pluginId)"
+            (input)="setPluginTitle($index, $any($event.target).value)"
+            [placeholder]="getDefaultLabel(plugin.pluginId)"
+          />
+          <button
+            tuiButton
+            appearance="flat"
+            size="s"
+            type="button"
+            (click)="removePlugin($index)"
+          >
+            Удалить
+          </button>
+        </li>
+      }
+    </ul>
+    <div class="card template-add" tuiSurface>
+      <label class="template-add__label">Добавить плагин</label>
+      <select
+        class="template-select"
+        #addSelect
+        (change)="addSelect.value && addPlugin(addSelect.value); addSelect.value = ''"
+      >
+        <option value="">Выберите…</option>
+        @for (item of library(); track item.pluginId) {
+          @if (canAddPlugin(item.pluginId)) {
+            <option [value]="item.pluginId">{{ item.label }} ({{ item.group }})</option>
+          }
+        }
+      </select>
+    </div>
+    <div class="template-actions">
+      <button tuiButton appearance="primary" size="s" (click)="save()">
+        Сохранить
+      </button>
+      <button tuiButton appearance="secondary" size="s" (click)="cancelEdit()">
+        Отмена
+      </button>
+    </div>
+  }
+</div>

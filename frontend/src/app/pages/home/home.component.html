@@ -87,7 +87,7 @@
   @if (activeOperereviewTabIndex === 0) {
     <div class="tab-panel tab-panel--empty">Раздел «Отчеты» в разработке.</div>
   } @else {
-    <div class="tab-panel tab-panel--empty">Раздел «Настройки» в разработке.</div>
+    <app-report-template-settings [unitId]="unit.id" />
   }
   }
 }

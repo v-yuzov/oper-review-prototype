@@ -52,11 +52,11 @@ export class PlaceholderReportPluginComponent
   override defaultPrompt = DEFAULT_PROMPT;
 
   /** Переопределение промпта снаружи (пробрасывается в базу). */
-  @Input() prompt: string | null = null;
+  @Input() override prompt: string | null = null;
 
   @ViewChild('pluginBase') private pluginBase!: ReportPluginBaseComponent;
 
-  getChartSnapshot(): Promise<string> {
+  override getChartSnapshot(): Promise<string> {
     return this.pluginBase.getChartSnapshot();
   }
 }

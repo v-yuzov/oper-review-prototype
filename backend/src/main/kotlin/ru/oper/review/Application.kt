@@ -1,5 +1,7 @@
 package ru.oper.review
 
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -15,12 +17,15 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.oper.review.api.configureReportTemplateRouting
 import ru.oper.review.api.configureUnitsRouting
 import ru.oper.review.plugins.configureRouting
 import ru.oper.review.storage.EmployeeTable
 import org.slf4j.LoggerFactory
 import ru.oper.review.storage.HealthTable
 import ru.oper.review.storage.ReportTable
+import ru.oper.review.storage.ReportTemplatePluginTable
+import ru.oper.review.storage.ReportTemplateTable
 import ru.oper.review.storage.UnitEmployeeTable
 import ru.oper.review.storage.UnitTable
 
@@ -39,6 +44,9 @@ fun Application.module() {
     }
     install(CORS) {
         anyHost()
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Options)
+        allowHeader(HttpHeaders.ContentType)
     }
     install(StatusPages) {
         exception<Throwable> { call, cause ->
@@ -58,12 +66,15 @@ fun Application.module() {
             UnitTable,
             UnitEmployeeTable,
             HealthTable,
-            ReportTable
+            ReportTable,
+            ReportTemplateTable,
+            ReportTemplatePluginTable
         )
     }
 
     routing {
         configureRouting()
         configureUnitsRouting()
+        configureReportTemplateRouting()
     }
 }

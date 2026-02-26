@@ -124,7 +124,7 @@ export class CustomReportPluginComponent
   /** Пустой промпт по умолчанию */
   override defaultPrompt = '';
 
-  @Input() prompt: string | null = null;
+  @Input() override prompt: string | null = null;
 
   /** Data URL вставленного изображения */
   imageDataUrl: string | null = null;
@@ -168,7 +168,7 @@ export class CustomReportPluginComponent
     reader.readAsDataURL(file);
   }
 
-  getChartSnapshot(): Promise<string> {
+  override getChartSnapshot(): Promise<string> {
     if (this.imageDataUrl) {
       return Promise.resolve(this.imageDataUrl);
     }

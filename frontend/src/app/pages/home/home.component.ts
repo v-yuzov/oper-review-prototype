@@ -6,12 +6,21 @@ import { EMPTY } from 'rxjs';
 import { TuiSurface, TuiButton, TuiLoader } from '@taiga-ui/core';
 import { TuiTabs } from '@taiga-ui/kit/components/tabs';
 import { UnitsApiService } from '../../services/units-api.service';
+import { ReportTemplateSettingsComponent } from './report-template-settings/report-template-settings.component';
 import type { UnitViewDto } from '../../models/unit-view.model';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, TuiSurface, TuiButton, TuiLoader, TuiTabs],
+  imports: [
+    CommonModule,
+    RouterLink,
+    TuiSurface,
+    TuiButton,
+    TuiLoader,
+    TuiTabs,
+    ReportTemplateSettingsComponent,
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })

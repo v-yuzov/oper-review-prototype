@@ -19,7 +19,7 @@ import {
   PluginGroupLabel,
 } from '../types';
 import { TuiSurface } from '@taiga-ui/core';
-import { TuiTextareaModule } from '@taiga-ui/kit/components/textarea';
+import { TuiTextarea } from '@taiga-ui/kit/components/textarea';
 import { TuiSegmented } from '@taiga-ui/kit/components/segmented';
 import html2canvas from 'html2canvas';
 
@@ -42,7 +42,7 @@ import html2canvas from 'html2canvas';
     CommonModule,
     FormsModule,
     TuiSurface,
-    TuiTextareaModule,
+    TuiTextarea,
     TuiSegmented,
   ],
   templateUrl: './report-plugin-base.component.html',
