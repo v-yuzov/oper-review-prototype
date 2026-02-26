@@ -1,0 +1,22 @@
+# Запуск в Colima: colima start && docker compose up --build
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend-data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4201:80"
+    depends_on:
+      - backend
+
+volumes:
+  backend-data:

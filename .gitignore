@@ -1,0 +1,25 @@
+# Backend (Gradle, Kotlin, IDEA)
+/backend/.gradle/
+/backend/build/
+/backend/out/
+/backend/data/
+*.iml
+.idea/
+
+# Frontend (Node, Angular)
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.angular/
+/frontend/*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+
+# Logs
+*.log
