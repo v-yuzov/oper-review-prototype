@@ -1,0 +1,93 @@
+@if (loading) {
+  <div class="loading-wrap" aria-busy="true">
+    <tui-loader size="xl" [showLoader]="true"></tui-loader>
+    <span class="loading-label">Загрузка…</span>
+  </div>
+} @else if (error) {
+  <p class="error">{{ error }}</p>
+} @else if (unit) {
+  @if (unit.parentId != null) {
+    <nav class="nav-up">
+      <a [routerLink]="['/unit', unit.parentId]" tuiButton appearance="flat" size="s">← На уровень выше</a>
+    </nav>
+  }
+
+  <h1 class="unit-title">{{ unit.name }}</h1>
+
+  <nav tuiTabs [(activeItemIndex)]="activeTabIndex" [underline]="tabUnderlineColor" class="unit-tabs">
+    <button tuiTab tuiItem>Состав</button>
+    <button tuiTab tuiItem>Опреревью</button>
+  </nav>
+
+  @if (activeTabIndex === 0) {
+  @if (unit.manager) {
+    <h2 class="section-title">Руководитель</h2>
+    <div class="card" tuiSurface>
+      <div class="card__avatar" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </div>
+      <div class="card__body">
+        <span class="card-name">{{ unit.manager.name }}</span>
+        @if (unit.manager.position) {
+          <span class="card-position">{{ unit.manager.position }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  @if (hasChildren()) {
+    <h2 class="section-title section-departments">Команды</h2>
+    <div class="cards-grid">
+      @for (child of unit.children; track child.id) {
+        <a [routerLink]="['/unit', child.id]" class="card card--clickable" tuiSurface>
+          <div class="card__avatar" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <div class="card__body">
+            <span class="card-name">{{ child.name }}</span>
+            @if (child.managerName) {
+              <span class="card-sub">{{ child.managerName }}</span>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  } @else if (unit.employees.length > 0) {
+    <h2 class="section-title section-employees">Сотрудники</h2>
+    <div class="cards-grid">
+      @for (emp of unit.employees; track emp.id) {
+        <div class="card" tuiSurface>
+          <div class="card__avatar" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <div class="card__body">
+            <span class="card-name">{{ emp.name }}</span>
+            @if (emp.position) {
+              <span class="card-position">{{ emp.position }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+  } @else if (activeTabIndex === 1) {
+  <nav tuiTabs [(activeItemIndex)]="activeOperereviewTabIndex" [underline]="tabUnderlineColor" class="operereview-tabs">
+    <button tuiTab tuiItem>Отчеты</button>
+    <button tuiTab tuiItem>Настройки</button>
+  </nav>
+  @if (activeOperereviewTabIndex === 0) {
+    <div class="tab-panel tab-panel--empty">Раздел «Отчеты» в разработке.</div>
+  } @else {
+    <div class="tab-panel tab-panel--empty">Раздел «Настройки» в разработке.</div>
+  }
+  }
+}

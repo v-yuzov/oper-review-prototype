@@ -15,11 +15,16 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.oper.review.api.configureUnitsRouting
 import ru.oper.review.plugins.configureRouting
 import ru.oper.review.storage.EmployeeTable
+import org.slf4j.LoggerFactory
 import ru.oper.review.storage.HealthTable
+import ru.oper.review.storage.ReportTable
 import ru.oper.review.storage.UnitEmployeeTable
 import ru.oper.review.storage.UnitTable
+
+private val log = LoggerFactory.getLogger("ru.oper.review.Application")
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module).start(wait = true)
@@ -37,6 +42,7 @@ fun Application.module() {
     }
     install(StatusPages) {
         exception<Throwable> { call, cause ->
+            log.error("Unhandled exception", cause)
             call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (cause.message ?: "Unknown error")))
         }
     }
@@ -51,11 +57,13 @@ fun Application.module() {
             EmployeeTable,
             UnitTable,
             UnitEmployeeTable,
-            HealthTable
+            HealthTable,
+            ReportTable
         )
     }
 
     routing {
         configureRouting()
+        configureUnitsRouting()
     }
 }

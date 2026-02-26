@@ -4,10 +4,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
-      - backend-data:/app/data
+      # Используем БД с хоста (после seed: ./gradlew -p backend seed)
+      - ./backend/data:/app/data
 
   frontend:
     build:
@@ -17,6 +19,3 @@ services:
       - "4201:80"
     depends_on:
       - backend
-
-volumes:
-  backend-data:

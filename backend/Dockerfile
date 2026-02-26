@@ -15,12 +15,10 @@ WORKDIR /app
 RUN adduser -D -h /app appuser
 
 COPY --from=build /app/build/install/oper-review-backend /app/install
+COPY entrypoint.sh /app/entrypoint.sh
 RUN chown -R appuser:appuser /app && \
-    chmod +x /app/install/oper-review-backend/bin/oper-review-backend 2>/dev/null || true
+    chmod +x /app/install/bin/oper-review-backend /app/entrypoint.sh 2>/dev/null || true
 
-USER appuser
 EXPOSE 8080
-
-# Запуск через sh по полному пути (обход entrypoint temurin, не подхватывающего PATH)
-ENTRYPOINT []
-CMD ["/bin/sh", "-c", "exec /app/install/oper-review-backend/bin/oper-review-backend"]
+# Entrypoint от root: выставляет права на /app/data, затем запускает приложение от appuser
+ENTRYPOINT ["/app/entrypoint.sh"]

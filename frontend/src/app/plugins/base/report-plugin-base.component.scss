@@ -1,0 +1,72 @@
+.report-plugin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.report-plugin__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.report-plugin__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.report-plugin__group {
+  font-size: 0.875rem;
+  color: var(--tui-text-02, #666);
+}
+
+.report-plugin__section-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--tui-text-02, #666);
+}
+
+.report-plugin__section {
+  display: flex;
+  flex-direction: column;
+}
+
+.report-plugin__viz {
+  padding: 1rem;
+  border-radius: 12px;
+  min-height: 120px;
+
+  &--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.report-plugin__placeholder {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--tui-text-02, #666);
+}
+
+.report-plugin__llm {
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.report-plugin__md {
+  font-size: 0.9375rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.report-plugin__user-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.report-plugin__rating {
+  align-self: flex-start;
+}

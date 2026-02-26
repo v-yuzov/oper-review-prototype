@@ -1,0 +1,57 @@
+<div class="report-plugin">
+  <header class="report-plugin__header">
+    <h2 class="report-plugin__title">{{ label }}</h2>
+    <span class="report-plugin__group">{{ groupLabel }}</span>
+  </header>
+
+  <!-- 1. Визуализация (кастомная: чарты и т.д.) -->
+  <section class="report-plugin__section" *ngIf="visualizationRef; else noVisualization">
+    <h3 class="report-plugin__section-title">Визуализация</h3>
+    <div class="report-plugin__viz" tuiSurface #vizContainer>
+      <ng-container *ngTemplateOutlet="visualizationRef"></ng-container>
+    </div>
+  </section>
+  <ng-template #noVisualization>
+    <section class="report-plugin__section">
+      <h3 class="report-plugin__section-title">Визуализация</h3>
+      <div class="report-plugin__viz report-plugin__viz--placeholder" tuiSurface #vizContainer>
+        <p class="report-plugin__placeholder">Кастомная визуализация плагина (графики, чарты)</p>
+      </div>
+    </section>
+  </ng-template>
+
+  <!-- 2. Результат анализа от LLM (Markdown) -->
+  <section class="report-plugin__section">
+    <h3 class="report-plugin__section-title">Анализ данных (LLM)</h3>
+    <div class="report-plugin__llm" tuiSurface>
+      <div class="report-plugin__md">{{ data.llmMarkdown || '—' }}</div>
+    </div>
+  </section>
+
+  <!-- 3. Анализ пользователя (Taiga Textarea) -->
+  <section class="report-plugin__section">
+    <h3 class="report-plugin__section-title">Комментарий пользователя</h3>
+    <textarea
+      tuiTextarea
+      [ngModel]="data.userAnalysis"
+      (ngModelChange)="onUserAnalysisChange($event)"
+      placeholder="Введите ваш анализ..."
+      class="report-plugin__user-input"
+      rows="4"
+    ></textarea>
+  </section>
+
+  <!-- 4. Трёхбальная оценка -->
+  <section class="report-plugin__section">
+    <h3 class="report-plugin__section-title">Оценка</h3>
+    <tui-segmented
+      [activeItemIndex]="ratingIndex"
+      (activeItemIndexChange)="onRatingIndexChange($event)"
+      class="report-plugin__rating"
+    >
+      <button type="button">{{ ReportRatingLabel[ReportRating.Excellent] }}</button>
+      <button type="button">{{ ReportRatingLabel[ReportRating.NeedsWork] }}</button>
+      <button type="button">{{ ReportRatingLabel[ReportRating.Poor] }}</button>
+    </tui-segmented>
+  </section>
+</div>
