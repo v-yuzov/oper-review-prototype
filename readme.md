@@ -28,6 +28,7 @@ oper-review-prototype/
 ├── scripts/
 │   └── setup-env-mac.sh        # Подготовка окружения на macOS (Colima, Docker, buildx, credentials)
 │   └── build-and-run-colima.sh # Полная сборка и запуск в Colima
+│   └── commit-and-push.sh     # Коммит и пуш в GitHub (из корня: ./scripts/commit-and-push.sh)
 ├── backend/                    # Kotlin (Ktor), Gradle 9, JVM 21
 │   ├── build.gradle.kts
 │   ├── settings.gradle.kts
