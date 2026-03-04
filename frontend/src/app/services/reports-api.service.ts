@@ -28,4 +28,8 @@ export class ReportsApiService {
   update(unitId: number, reportId: number, body: ReportPutDto): Observable<ReportDto> {
     return this.http.put<ReportDto>(`${this.api}/units/${unitId}/reports/${reportId}`, body);
   }
+
+  delete(unitId: number, reportId: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/units/${unitId}/reports/${reportId}`);
+  }
 }

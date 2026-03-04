@@ -1,3 +1,4 @@
+/* Список отчётов — MD3-стиль: карточки с явной кликабельностью и кнопка удаления */
 .reports-list {
   .loading-wrap {
     display: flex;
@@ -19,13 +20,99 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+  }
 
-    .card--clickable {
-      display: block;
-      padding: 0.75rem 1rem;
-      text-decoration: none;
-      color: inherit;
-      border-radius: 12px;
+  .reports-list__item {
+    list-style: none;
+  }
+
+  /* Плашки в том же стиле, что и карточки юнитов (home.component .card) */
+  .reports-list__card-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border-radius: 12px;
+    padding: 0;
+    background-color: rgb(246, 247, 248);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+
+    &:hover {
+      background-color: rgb(236, 239, 242);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
     }
+  }
+
+  .reports-list__card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-width: 0;
+    border-radius: 12px 0 0 12px;
+    background-color: transparent;
+
+    &:hover {
+      background-color: transparent;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--tui-primary, #006cfa);
+      outline-offset: -2px;
+      z-index: 1;
+    }
+  }
+
+  .reports-list__card-label {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .reports-list__card-chevron {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M9 18l6-6-6-6'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+    background-color: var(--tui-text-03, #999);
+  }
+
+  .reports-list__delete {
+    flex-shrink: 0;
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    min-width: 48px;
+    padding: 0 !important;
+    border: none;
+    border-radius: 0 12px 12px 0;
+    border-left: 1px solid rgba(0, 0, 0, 0.06);
+    color: var(--tui-text-03, #999);
+    background: transparent;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--tui-error-fill, #d32f2f);
+      background-color: rgba(211, 47, 47, 0.08);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+
+  .reports-list__delete-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
   }
 }

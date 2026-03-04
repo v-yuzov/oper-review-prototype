@@ -18,6 +18,7 @@ export class ReportsListComponent implements OnInit {
   reports: ReportListItemDto[] = [];
   loading = true;
   error: string | null = null;
+  deletingId: number | null = null;
 
   constructor(
     private readonly api: ReportsApiService,
@@ -56,5 +57,24 @@ export class ReportsListComponent implements OnInit {
     } catch {
       return iso;
     }
+  }
+
+  deleteReport(event: Event, reportId: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.deletingId != null) return;
+    this.deletingId = reportId;
+    this.api.delete(this.unitId, reportId).subscribe({
+      next: () => {
+        this.reports = this.reports.filter((r) => r.id !== reportId);
+        this.deletingId = null;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'Не удалось удалить отчёт';
+        this.deletingId = null;
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

@@ -4,6 +4,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
@@ -265,6 +266,30 @@ fun Application.configureReportsRouting() {
                 )
             }
             call.respond(updated!!)
+        }
+
+        delete("/api/units/{unitId}/reports/{reportId}") {
+            val unitId = call.parameters["unitId"]?.toIntOrNull()
+            val reportId = call.parameters["reportId"]?.toIntOrNull()
+            if (unitId == null || reportId == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid id"))
+                return@delete
+            }
+            val deleted = transaction {
+                val row = ReportTable.selectAll()
+                    .where { ReportTable.id eq reportId }
+                    .firstOrNull() ?: return@transaction false
+                if (row[ReportTable.unitId].value != unitId) return@transaction false
+                val reportIdRef = EntityID(reportId, ReportTable)
+                ReportPluginDataTable.deleteWhere { ReportPluginDataTable.reportId eq reportIdRef }
+                ReportTable.deleteWhere { ReportTable.id eq reportId }
+                true
+            }
+            if (!deleted) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Report not found"))
+                return@delete
+            }
+            call.respond(HttpStatusCode.NoContent)
         }
     }
 }
