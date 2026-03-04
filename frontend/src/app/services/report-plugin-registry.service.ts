@@ -1,3 +1,4 @@
+import type { Type } from '@angular/core';
 import { Injectable } from '@angular/core';
 import { DELIVERY_PLUGINS } from '../plugins/groups/delivery';
 import { OTHER_PLUGINS } from '../plugins/groups/other';
@@ -15,6 +16,8 @@ const ALL_PLUGINS: PluginLibraryItem[] = [
   ...OTHER_PLUGINS.map((p) => ({ pluginId: p.pluginId, label: p.label, group: p.group })),
 ];
 
+const ALL_ENTRIES = [...DELIVERY_PLUGINS, ...OTHER_PLUGINS];
+
 @Injectable({ providedIn: 'root' })
 export class ReportPluginRegistryService {
   /** Список плагинов для добавления в шаблон (по одному каждого типа, кроме custom). */
@@ -31,5 +34,15 @@ export class ReportPluginRegistryService {
   /** Можно ли добавить плагин в шаблон несколько раз (только custom). */
   canAddMultiple(pluginId: string): boolean {
     return pluginId === 'custom';
+  }
+
+  /** Компонент плагина по pluginId для динамического рендера отчёта. */
+  getComponent(pluginId: string): Type<unknown> | null {
+    return ALL_ENTRIES.find((p) => p.pluginId === pluginId)?.component ?? null;
+  }
+
+  /** Запись плагина (label, group, defaultPrompt, component) по pluginId. */
+  getEntry(pluginId: string): (typeof ALL_ENTRIES)[number] | null {
+    return ALL_ENTRIES.find((p) => p.pluginId === pluginId) ?? null;
   }
 }

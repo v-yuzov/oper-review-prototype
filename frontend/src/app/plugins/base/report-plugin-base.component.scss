@@ -33,6 +33,18 @@
   flex-direction: column;
 }
 
+.report-plugin__viz-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+
+  .report-plugin__section-title {
+    margin-bottom: 0;
+  }
+}
+
 .report-plugin__viz {
   padding: 1rem;
   border-radius: 12px;
@@ -65,8 +77,81 @@
 .report-plugin__user-input {
   width: 100%;
   box-sizing: border-box;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tui-base-04, #e5e5e5);
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
 }
 
+/* Оценка — светофор (MD3 приглушённые: Green 300, Amber 300, Red 300) */
 .report-plugin__rating {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   align-self: flex-start;
+}
+
+.report-plugin__rating-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  background: var(--tui-base-02, #f5f5f5);
+  color: var(--tui-text-01, #333);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    background: var(--tui-base-03, #eee);
+  }
+
+  &--green .report-plugin__rating-dot { background: #81c784; }
+  &--yellow .report-plugin__rating-dot { background: #ffb74d; }
+  &--red .report-plugin__rating-dot { background: #e57373; }
+
+  &--active.report-plugin__rating-btn--green {
+    border-color: #81c784;
+    background: rgba(129, 199, 132, 0.12);
+  }
+  &--active.report-plugin__rating-btn--yellow {
+    border-color: #ffb74d;
+    background: rgba(255, 183, 77, 0.12);
+  }
+  &--active.report-plugin__rating-btn--red {
+    border-color: #e57373;
+    background: rgba(229, 115, 115, 0.12);
+  }
+}
+
+.report-plugin__rating-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.report-plugin__fix-btn {
+  flex-shrink: 0;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  background: var(--tui-primary, #006cfa);
+  color: #fff;
+  border: none;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }

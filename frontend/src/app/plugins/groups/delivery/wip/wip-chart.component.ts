@@ -47,6 +47,10 @@ const CATEGORY_COLORS = [
 export class WipChartComponent
   implements AfterViewInit, OnChanges, OnDestroy
 {
+  constructor() {
+    console.log('[WipChartComponent] constructor');
+  }
+
   @Input() chartData: WipDataPoint[] = [];
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;

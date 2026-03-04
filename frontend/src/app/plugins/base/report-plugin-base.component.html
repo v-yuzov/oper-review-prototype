@@ -4,16 +4,40 @@
     <span class="report-plugin__group">{{ groupLabel }}</span>
   </header>
 
-  <!-- 1. Визуализация (кастомная: чарты и т.д.) -->
+  <!-- 1. Визуализация (заголовок и кнопка «Зафиксировать» в одну строку; у custom плагина кнопки нет) -->
   <section class="report-plugin__section" *ngIf="visualizationRef; else noVisualization">
-    <h3 class="report-plugin__section-title">Визуализация</h3>
+    <div class="report-plugin__viz-head">
+      <h3 class="report-plugin__section-title">Визуализация</h3>
+      @if (pluginId !== 'custom') {
+        <button
+          type="button"
+          class="report-plugin__fix-btn"
+          (click)="onFixChart()"
+          [disabled]="fixingSnapshot()"
+        >
+          {{ fixingSnapshot() ? 'Фиксация…' : 'Зафиксировать' }}
+        </button>
+      }
+    </div>
     <div class="report-plugin__viz" tuiSurface #vizContainer>
       <ng-container *ngTemplateOutlet="visualizationRef"></ng-container>
     </div>
   </section>
   <ng-template #noVisualization>
     <section class="report-plugin__section">
-      <h3 class="report-plugin__section-title">Визуализация</h3>
+      <div class="report-plugin__viz-head">
+        <h3 class="report-plugin__section-title">Визуализация</h3>
+        @if (pluginId !== 'custom') {
+          <button
+            type="button"
+            class="report-plugin__fix-btn"
+            (click)="onFixChart()"
+            [disabled]="fixingSnapshot()"
+          >
+            {{ fixingSnapshot() ? 'Фиксация…' : 'Зафиксировать' }}
+          </button>
+        }
+      </div>
       <div class="report-plugin__viz report-plugin__viz--placeholder" tuiSurface #vizContainer>
         <p class="report-plugin__placeholder">Кастомная визуализация плагина (графики, чарты)</p>
       </div>
@@ -28,30 +52,52 @@
     </div>
   </section>
 
-  <!-- 3. Анализ пользователя (Taiga Textarea) -->
+  <!-- 3. Анализ пользователя. Обычный textarea (без tuiTextarea), чтобы не требовать ControlContainer и не получать NG0201. -->
   <section class="report-plugin__section">
     <h3 class="report-plugin__section-title">Комментарий пользователя</h3>
     <textarea
-      tuiTextarea
-      [ngModel]="data.userAnalysis"
-      (ngModelChange)="onUserAnalysisChange($event)"
+      [value]="data.userAnalysis"
+      (input)="onUserAnalysisChange($any($event.target).value)"
       placeholder="Введите ваш анализ..."
       class="report-plugin__user-input"
       rows="4"
     ></textarea>
   </section>
 
-  <!-- 4. Трёхбальная оценка -->
+  <!-- 4. Оценка — светофор (зелёный / жёлтый / красный) -->
   <section class="report-plugin__section">
     <h3 class="report-plugin__section-title">Оценка</h3>
-    <tui-segmented
-      [activeItemIndex]="ratingIndex"
-      (activeItemIndexChange)="onRatingIndexChange($event)"
-      class="report-plugin__rating"
-    >
-      <button type="button">{{ ReportRatingLabel[ReportRating.Excellent] }}</button>
-      <button type="button">{{ ReportRatingLabel[ReportRating.NeedsWork] }}</button>
-      <button type="button">{{ ReportRatingLabel[ReportRating.Poor] }}</button>
-    </tui-segmented>
+    <div class="report-plugin__rating" role="group" aria-label="Оценка">
+      <button
+        type="button"
+        class="report-plugin__rating-btn report-plugin__rating-btn--green"
+        [class.report-plugin__rating-btn--active]="ratingIndex === 0"
+        (click)="onRatingIndexChange(0)"
+        [attr.aria-pressed]="ratingIndex === 0"
+      >
+        <span class="report-plugin__rating-dot"></span>
+        {{ ReportRatingLabel[ReportRating.Excellent] }}
+      </button>
+      <button
+        type="button"
+        class="report-plugin__rating-btn report-plugin__rating-btn--yellow"
+        [class.report-plugin__rating-btn--active]="ratingIndex === 1"
+        (click)="onRatingIndexChange(1)"
+        [attr.aria-pressed]="ratingIndex === 1"
+      >
+        <span class="report-plugin__rating-dot"></span>
+        {{ ReportRatingLabel[ReportRating.NeedsWork] }}
+      </button>
+      <button
+        type="button"
+        class="report-plugin__rating-btn report-plugin__rating-btn--red"
+        [class.report-plugin__rating-btn--active]="ratingIndex === 2"
+        (click)="onRatingIndexChange(2)"
+        [attr.aria-pressed]="ratingIndex === 2"
+      >
+        <span class="report-plugin__rating-dot"></span>
+        {{ ReportRatingLabel[ReportRating.Poor] }}
+      </button>
+    </div>
   </section>
 </div>

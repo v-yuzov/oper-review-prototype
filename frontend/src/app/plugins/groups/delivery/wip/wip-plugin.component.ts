@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { ReportPluginBaseComponent } from '../../../base/report-plugin-base.component';
 import { PluginGroup } from '../../../types';
 import type { IReportPluginComponent } from '../../../types';
@@ -41,7 +41,7 @@ export const WIP_DEFAULT_PROMPT = `Ты аналитик процессов в �
     <app-report-plugin-base
       #pluginBase
       pluginId="wip"
-      label="Work In Progress"
+      [label]="label"
       [group]="group"
       [defaultPrompt]="defaultPrompt"
       [prompt]="prompt"
@@ -49,6 +49,7 @@ export const WIP_DEFAULT_PROMPT = `Ты аналитик процессов в �
       [reportDate]="reportDate"
       [data]="data"
       (dataChange)="dataChange.emit($event)"
+      (snapshotCapture)="snapshotCapture.emit($event)"
     >
       <ng-template #visualization>
         <app-wip-chart [chartData]="chartData" />
@@ -60,11 +61,19 @@ export class WipPluginComponent
   extends ReportPluginBaseComponent
   implements IReportPluginComponent
 {
+  constructor() {
+    super();
+  }
+
   override group = PluginGroup.Delivery;
 
   override defaultPrompt = WIP_DEFAULT_PROMPT;
 
+  @Input() override label = 'Work In Progress';
+
   @Input() override prompt: string | null = null;
+
+  @Output() override snapshotCapture = new EventEmitter<string>();
 
   /** Данные для графика (JSON); по умолчанию — мок */
   @Input() chartData: WipDataPoint[] = MOCK_WIP_DATA;

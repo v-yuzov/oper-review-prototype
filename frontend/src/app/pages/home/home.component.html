@@ -85,7 +85,7 @@
     <button tuiTab tuiItem>Настройки</button>
   </nav>
   @if (activeOperereviewTabIndex === 0) {
-    <div class="tab-panel tab-panel--empty">Раздел «Отчеты» в разработке.</div>
+    <app-reports-list [unitId]="unit.id" />
   } @else {
     <app-report-template-settings [unitId]="unit.id" />
   }

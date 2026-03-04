@@ -7,9 +7,9 @@ import {
   ViewChild,
   ElementRef,
   TemplateRef,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   type PluginGroupId,
   type ReportRatingValue,
@@ -19,8 +19,6 @@ import {
   PluginGroupLabel,
 } from '../types';
 import { TuiSurface } from '@taiga-ui/core';
-import { TuiTextarea } from '@taiga-ui/kit/components/textarea';
-import { TuiSegmented } from '@taiga-ui/kit/components/segmented';
 import html2canvas from 'html2canvas';
 
 /**
@@ -29,7 +27,7 @@ import html2canvas from 'html2canvas';
  * Плагин состоит из блоков:
  * - Визуализация (кастомная, задаётся через ng-content #visualization)
  * - Текстовое поле с результатом анализа от LLM (Markdown)
- * - Текстовое поле анализа пользователя (Taiga Textarea)
+ * - Текстовое поле анализа пользователя (обычный textarea, без Taiga — избегаем NG0201)
  * - Трёхбальная оценка: Отлично / Есть над чем поработать / Плохо
  *
  * Используется через композицию: конкретный плагин задаёт pluginId, label, group
@@ -38,17 +36,13 @@ import html2canvas from 'html2canvas';
 @Component({
   selector: 'app-report-plugin-base',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    TuiSurface,
-    TuiTextarea,
-    TuiSegmented,
-  ],
+  imports: [CommonModule, TuiSurface],
   templateUrl: './report-plugin-base.component.html',
   styleUrls: ['./report-plugin-base.component.scss'],
 })
 export class ReportPluginBaseComponent {
+  constructor() {}
+
   /** Уникальный идентификатор плагина (задаётся обёрткой) */
   @Input() pluginId = '';
 
@@ -82,6 +76,12 @@ export class ReportPluginBaseComponent {
   };
 
   @Output() dataChange = new EventEmitter<ReportPluginData>();
+
+  /** Эмит при нажатии «Зафиксировать»: родитель сохраняет base64 в состоянии и в БД при save(). */
+  @Output() snapshotCapture = new EventEmitter<string>();
+
+  /** Флаг процесса создания снапшота (для disabled кнопки). */
+  fixingSnapshot = signal(false);
 
   /** Шаблон кастомной визуализации (чарты и т.д.), передаётся из наследника через content */
   @ContentChild('visualization') visualizationRef: TemplateRef<unknown> | null =
@@ -144,5 +144,16 @@ export class ReportPluginBaseComponent {
       logging: false,
     });
     return canvas.toDataURL('image/png');
+  }
+
+  /** Обработчик кнопки «Зафиксировать»: делает снапшот и эмитит в родителя. */
+  async onFixChart(): Promise<void> {
+    this.fixingSnapshot.set(true);
+    try {
+      const dataUrl = await this.getChartSnapshot();
+      this.snapshotCapture.emit(dataUrl);
+    } finally {
+      this.fixingSnapshot.set(false);
+    }
   }
 }

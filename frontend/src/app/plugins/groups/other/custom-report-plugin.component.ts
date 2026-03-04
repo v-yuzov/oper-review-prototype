@@ -1,6 +1,8 @@
 import {
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewChild,
   HostListener,
   ElementRef,
@@ -23,7 +25,7 @@ import type { IReportPluginComponent } from '../../types';
     <app-report-plugin-base
       #pluginBase
       pluginId="custom"
-      label="Custom"
+      [label]="label"
       [group]="group"
       [defaultPrompt]="defaultPrompt"
       [prompt]="prompt"
@@ -31,6 +33,7 @@ import type { IReportPluginComponent } from '../../types';
       [reportDate]="reportDate"
       [data]="data"
       (dataChange)="dataChange.emit($event)"
+      (snapshotCapture)="snapshotCapture.emit($event)"
     >
       <ng-template #visualization>
         <div class="custom-viz" #vizHost>
@@ -119,12 +122,20 @@ export class CustomReportPluginComponent
   extends ReportPluginBaseComponent
   implements IReportPluginComponent
 {
+  constructor() {
+    super();
+  }
+
   override group = PluginGroup.Other;
 
   /** Пустой промпт по умолчанию */
   override defaultPrompt = '';
 
+  @Input() override label = 'Custom';
+
   @Input() override prompt: string | null = null;
+
+  @Output() override snapshotCapture = new EventEmitter<string>();
 
   /** Data URL вставленного изображения */
   imageDataUrl: string | null = null;

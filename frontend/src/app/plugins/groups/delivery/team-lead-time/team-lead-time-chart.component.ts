@@ -44,6 +44,10 @@ const COLORS = {
 export class TeamLeadTimeChartComponent
   implements AfterViewInit, OnChanges, OnDestroy
 {
+  constructor() {
+    console.log('[TeamLeadTimeChartComponent] constructor');
+  }
+
   @Input() chartData: LeadTimeDataPoint[] = [];
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;

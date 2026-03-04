@@ -14,6 +14,18 @@ export class ReportTemplateApiService {
 
   constructor(private readonly http: HttpClient) {}
 
+  /** Шаблон по иерархии: первый предок с шаблоном. 404 — шаблон не найден. */
+  getTemplateByHierarchy(unitId: number): Observable<ReportTemplateDto> {
+    const url = `${this.api}/units/${unitId}/report-template-by-hierarchy`;
+    return this.http.get<ReportTemplateDto>(url).pipe(
+      tap((t) => console.log(LOG, 'getTemplateByHierarchy', unitId, 'ok', t.plugins?.length ?? 0, 'plugins')),
+      tap({
+        error: (err: { status?: number; error?: unknown }) =>
+          console.error(LOG, 'getTemplateByHierarchy', unitId, 'error', err?.status, err?.error ?? err),
+      })
+    );
+  }
+
   /** Получить шаблон отчёта юнита. 404 — шаблон не задан. */
   getByUnitId(unitId: number): Observable<ReportTemplateDto> {
     const url = `${this.api}/units/${unitId}/report-template`;

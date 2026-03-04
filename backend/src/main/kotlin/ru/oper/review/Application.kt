@@ -18,11 +18,13 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.oper.review.api.configureReportTemplateRouting
+import ru.oper.review.api.configureReportsRouting
 import ru.oper.review.api.configureUnitsRouting
 import ru.oper.review.plugins.configureRouting
 import ru.oper.review.storage.EmployeeTable
 import org.slf4j.LoggerFactory
 import ru.oper.review.storage.HealthTable
+import ru.oper.review.storage.ReportPluginDataTable
 import ru.oper.review.storage.ReportTable
 import ru.oper.review.storage.ReportTemplatePluginTable
 import ru.oper.review.storage.ReportTemplateTable
@@ -45,6 +47,7 @@ fun Application.module() {
     install(CORS) {
         anyHost()
         allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Post)
         allowMethod(HttpMethod.Options)
         allowHeader(HttpHeaders.ContentType)
     }
@@ -67,14 +70,16 @@ fun Application.module() {
             UnitEmployeeTable,
             HealthTable,
             ReportTable,
-            ReportTemplateTable,
-            ReportTemplatePluginTable
-        )
+        ReportTemplateTable,
+        ReportTemplatePluginTable,
+        ReportPluginDataTable
+    )
     }
 
     routing {
         configureRouting()
         configureUnitsRouting()
         configureReportTemplateRouting()
+        configureReportsRouting()
     }
 }

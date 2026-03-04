@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { ReportPluginBaseComponent } from '../../../base/report-plugin-base.component';
 import { PluginGroup } from '../../../types';
 import type { IReportPluginComponent } from '../../../types';
@@ -39,7 +39,7 @@ export const TEAM_LEAD_TIME_DEFAULT_PROMPT = `Ты аналитик процес
     <app-report-plugin-base
       #pluginBase
       pluginId="team-lead-time"
-      label="Team Lead Time"
+      [label]="label"
       [group]="group"
       [defaultPrompt]="defaultPrompt"
       [prompt]="prompt"
@@ -47,6 +47,7 @@ export const TEAM_LEAD_TIME_DEFAULT_PROMPT = `Ты аналитик процес
       [reportDate]="reportDate"
       [data]="data"
       (dataChange)="dataChange.emit($event)"
+      (snapshotCapture)="snapshotCapture.emit($event)"
     >
       <ng-template #visualization>
         <app-team-lead-time-chart [chartData]="chartData" />
@@ -58,11 +59,19 @@ export class TeamLeadTimePluginComponent
   extends ReportPluginBaseComponent
   implements IReportPluginComponent
 {
+  constructor() {
+    super();
+  }
+
   override group = PluginGroup.Delivery;
 
   override defaultPrompt = TEAM_LEAD_TIME_DEFAULT_PROMPT;
 
+  @Input() override label = 'Team Lead Time';
+
   @Input() override prompt: string | null = null;
+
+  @Output() override snapshotCapture = new EventEmitter<string>();
 
   /** Данные для графика (JSON); по умолчанию — мок */
   @Input() chartData: LeadTimeDataPoint[] = MOCK_LEAD_TIME_DATA;

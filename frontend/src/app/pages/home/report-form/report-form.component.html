@@ -1,0 +1,88 @@
+<div class="report-form" #reportFormContainer>
+  @if (loading()) {
+    <div class="loading-wrap" aria-busy="true">
+      <tui-loader size="xl" [showLoader]="true"></tui-loader>
+      <span class="loading-label">Загрузка…</span>
+    </div>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+    <a [routerLink]="['/unit', unitId()]" tuiButton appearance="flat" size="s">Назад</a>
+  } @else if (template()) {
+    <nav class="report-form__nav">
+      <a [routerLink]="['/unit', unitId()]" tuiButton appearance="flat" size="s">← Назад</a>
+    </nav>
+    <h2 class="section-title">{{ isEdit() ? 'Редактирование отчёта' : 'Новый отчёт' }}</h2>
+
+    <div class="card report-form__card" tuiSurface>
+      <label class="report-form__label" for="report-date">Дата проведения</label>
+      <input
+        id="report-date"
+        type="date"
+        class="report-form__input"
+        [value]="reportDate()"
+        (input)="reportDate.set($any($event.target).value)"
+      />
+    </div>
+
+    <div class="report-form__plugins">
+      @for (plugin of templatePlugins(); track $index) {
+        @if (pluginsData()[$index]; as data) {
+          <div class="card report-form__plugin" tuiSurface>
+            <form class="report-form__plugin-form" (ngSubmit)="$event.preventDefault()">
+            @switch (plugin.pluginId) {
+              @case ('team-lead-time') {
+                <app-team-lead-time-plugin
+                  [label]="getPluginLabel(plugin)"
+                  [data]="toPluginData(data)"
+                  [unitId]="unitId()!"
+                  [reportDate]="reportDate()"
+                  (dataChange)="onPluginDataFromPlugin($index, plugin, $event)"
+                  (snapshotCapture)="onSnapshotCapture($event)"
+                />
+              }
+              @case ('wip') {
+                <app-wip-plugin
+                  [label]="getPluginLabel(plugin)"
+                  [data]="toPluginData(data)"
+                  [unitId]="unitId()!"
+                  [reportDate]="reportDate()"
+                  (dataChange)="onPluginDataFromPlugin($index, plugin, $event)"
+                  (snapshotCapture)="onSnapshotCapture($event)"
+                />
+              }
+              @case ('custom') {
+                <app-custom-report-plugin
+                  [label]="getPluginLabel(plugin)"
+                  [data]="toPluginData(data)"
+                  [unitId]="unitId()!"
+                  [reportDate]="reportDate()"
+                  (dataChange)="onPluginDataFromPlugin($index, plugin, $event)"
+                  (snapshotCapture)="onSnapshotCapture($event)"
+                />
+              }
+              @default {
+                <p class="report-form__unknown">Неизвестный плагин: {{ plugin.pluginId }}</p>
+              }
+            }
+            </form>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="report-form__actions">
+      <button
+        tuiButton
+        appearance="primary"
+        size="s"
+        [disabled]="saving()"
+        (click)="save()"
+      >
+        {{ saving() ? 'Сохранение…' : 'Сохранить' }}
+      </button>
+      <button tuiButton appearance="secondary" size="s" (click)="cancel()">
+        Отмена
+      </button>
+    </div>
+  }
+</div>

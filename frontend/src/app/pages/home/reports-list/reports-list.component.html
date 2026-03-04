@@ -1,0 +1,29 @@
+<div class="reports-list">
+  @if (loading) {
+    <div class="loading-wrap" aria-busy="true">
+      <tui-loader size="l" [showLoader]="true"></tui-loader>
+      <span class="loading-label">Загрузка…</span>
+    </div>
+  } @else if (error) {
+    <p class="error">{{ error }}</p>
+  } @else {
+    <div class="reports-list__actions">
+      <a [routerLink]="['/unit', unitId, 'report', 'new']" tuiButton appearance="primary" size="s">
+        Создать отчёт
+      </a>
+    </div>
+    @if (reports.length === 0) {
+      <p class="tab-panel--empty">Нет отчётов. Создайте первый отчёт.</p>
+    } @else {
+      <ul class="reports-list__items">
+        @for (r of reports; track r.id) {
+          <li>
+            <a [routerLink]="['/unit', unitId, 'report', r.id]" class="card card--clickable" tuiSurface>
+              <span class="card-name">{{ formatDate(r.reportDate) }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

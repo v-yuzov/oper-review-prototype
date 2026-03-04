@@ -7,6 +7,7 @@ import { TuiSurface, TuiButton, TuiLoader } from '@taiga-ui/core';
 import { TuiTabs } from '@taiga-ui/kit/components/tabs';
 import { UnitsApiService } from '../../services/units-api.service';
 import { ReportTemplateSettingsComponent } from './report-template-settings/report-template-settings.component';
+import { ReportsListComponent } from './reports-list/reports-list.component';
 import type { UnitViewDto } from '../../models/unit-view.model';
 
 @Component({
@@ -20,6 +21,7 @@ import type { UnitViewDto } from '../../models/unit-view.model';
     TuiLoader,
     TuiTabs,
     ReportTemplateSettingsComponent,
+    ReportsListComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
@@ -46,6 +48,10 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((q) => {
+      if (q.get('tab') === 'reports') this.activeOperereviewTabIndex = 0;
+      this.cdr.markForCheck();
+    });
     this.route.paramMap.pipe(
       tap(() => {
         this.loading = true;
