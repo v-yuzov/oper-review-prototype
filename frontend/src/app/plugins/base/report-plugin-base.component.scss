@@ -63,6 +63,47 @@
   color: var(--tui-text-02, #666);
 }
 
+.report-plugin__llm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+
+  .report-plugin__section-title {
+    margin-bottom: 0;
+  }
+}
+
+.report-plugin__magic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  color: var(--tui-primary, #006cfa);
+  background: transparent;
+  border: 1px solid var(--tui-primary, #006cfa);
+  transition: opacity 0.15s, background 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 108, 250, 0.08);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.report-plugin__magic-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .report-plugin__llm {
   padding: 1rem;
   border-radius: 12px;

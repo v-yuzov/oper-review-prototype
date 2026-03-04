@@ -8,6 +8,7 @@ import {
   ElementRef,
   TemplateRef,
   signal,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -20,6 +21,7 @@ import {
 } from '../types';
 import { TuiSurface } from '@taiga-ui/core';
 import html2canvas from 'html2canvas';
+import { LlmApiService } from '../../services/llm-api.service';
 
 /**
  * Базовый компонент для всех плагинов кастомного отчёта.
@@ -41,10 +43,13 @@ import html2canvas from 'html2canvas';
   styleUrls: ['./report-plugin-base.component.scss'],
 })
 export class ReportPluginBaseComponent {
-  constructor() {}
+  private readonly llmApi = inject(LlmApiService);
 
   /** Уникальный идентификатор плагина (задаётся обёрткой) */
   @Input() pluginId = '';
+
+  /** Данные графика в JSON для отправки в LLM (плагин передаёт, например JSON.stringify(chartData)). */
+  @Input() chartDataForLlm: string | null = null;
 
   /** Название плагина для UI (задаётся обёрткой) */
   @Input() label = '';
@@ -82,6 +87,9 @@ export class ReportPluginBaseComponent {
 
   /** Флаг процесса создания снапшота (для disabled кнопки). */
   fixingSnapshot = signal(false);
+
+  /** Флаг запроса к LLM (кнопка «Магия»). */
+  llmLoading = signal(false);
 
   /** Шаблон кастомной визуализации (чарты и т.д.), передаётся из наследника через content */
   @ContentChild('visualization') visualizationRef: TemplateRef<unknown> | null =
@@ -155,5 +163,25 @@ export class ReportPluginBaseComponent {
     } finally {
       this.fixingSnapshot.set(false);
     }
+  }
+
+  /** Обработчик кнопки «Магия»: запрос к LLM с промптом плагина и данными графика, результат в llmMarkdown. */
+  onLlmMagic(): void {
+    if (this.llmLoading()) return;
+    this.llmLoading.set(true);
+    this.llmApi
+      .analyze({
+        pluginPrompt: this.effectivePrompt,
+        chartDataJson: this.chartDataForLlm ?? undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.emitDataChange({ ...this.data, llmMarkdown: res.content });
+          this.llmLoading.set(false);
+        },
+        error: () => {
+          this.llmLoading.set(false);
+        },
+      });
   }
 }

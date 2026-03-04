@@ -48,6 +48,7 @@ export const WIP_DEFAULT_PROMPT = `Ты аналитик процессов в �
       [unitId]="unitId"
       [reportDate]="reportDate"
       [data]="data"
+      [chartDataForLlm]="chartDataJson()"
       (dataChange)="dataChange.emit($event)"
       (snapshotCapture)="snapshotCapture.emit($event)"
     >
@@ -77,6 +78,11 @@ export class WipPluginComponent
 
   /** Данные для графика (JSON); по умолчанию — мок */
   @Input() chartData: WipDataPoint[] = MOCK_WIP_DATA;
+
+  /** JSON данных графика для отправки в LLM (кнопка «Магия»). */
+  chartDataJson(): string {
+    return JSON.stringify(this.chartData, null, 0);
+  }
 
   @ViewChild('pluginBase') private pluginBase!: ReportPluginBaseComponent;
 

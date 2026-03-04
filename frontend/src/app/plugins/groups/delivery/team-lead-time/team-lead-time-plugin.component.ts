@@ -46,6 +46,7 @@ export const TEAM_LEAD_TIME_DEFAULT_PROMPT = `Ты аналитик процес
       [unitId]="unitId"
       [reportDate]="reportDate"
       [data]="data"
+      [chartDataForLlm]="chartDataJson()"
       (dataChange)="dataChange.emit($event)"
       (snapshotCapture)="snapshotCapture.emit($event)"
     >
@@ -75,6 +76,11 @@ export class TeamLeadTimePluginComponent
 
   /** Данные для графика (JSON); по умолчанию — мок */
   @Input() chartData: LeadTimeDataPoint[] = MOCK_LEAD_TIME_DATA;
+
+  /** JSON данных графика для отправки в LLM (кнопка «Магия»). */
+  chartDataJson(): string {
+    return JSON.stringify(this.chartData, null, 0);
+  }
 
   @ViewChild('pluginBase') private pluginBase!: ReportPluginBaseComponent;
 

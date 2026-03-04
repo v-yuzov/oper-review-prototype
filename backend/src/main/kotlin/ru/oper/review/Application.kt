@@ -17,6 +17,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.oper.review.api.configureLlmRouting
 import ru.oper.review.api.configureReportTemplateRouting
 import ru.oper.review.api.configureReportsRouting
 import ru.oper.review.api.configureUnitsRouting
@@ -81,5 +82,6 @@ fun Application.module() {
         configureUnitsRouting()
         configureReportTemplateRouting()
         configureReportsRouting()
+        configureLlmRouting()
     }
 }

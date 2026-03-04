@@ -44,9 +44,26 @@
     </section>
   </ng-template>
 
-  <!-- 2. Результат анализа от LLM (Markdown) -->
+  <!-- 2. Результат анализа от LLM (Markdown) + кнопка «Магия» (кроме custom) -->
   <section class="report-plugin__section">
-    <h3 class="report-plugin__section-title">Анализ данных (LLM)</h3>
+    <div class="report-plugin__llm-head">
+      <h3 class="report-plugin__section-title">Анализ данных (LLM)</h3>
+      @if (pluginId !== 'custom') {
+        <button
+          type="button"
+          class="report-plugin__magic-btn"
+          (click)="onLlmMagic()"
+          [disabled]="llmLoading()"
+          [attr.aria-label]="'Запустить анализ через LLM'"
+          title="Запустить анализ через LLM"
+        >
+          <svg class="report-plugin__magic-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/>
+          </svg>
+          {{ llmLoading() ? 'Анализ…' : 'Магия' }}
+        </button>
+      }
+    </div>
     <div class="report-plugin__llm" tuiSurface>
       <div class="report-plugin__md">{{ data.llmMarkdown || '—' }}</div>
     </div>
