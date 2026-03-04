@@ -7,6 +7,10 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    environment:
+      # LLM: передаются из окружения хоста или из .env (см. readme — запуск в Colima)
+      - LLM_URL=${LLM_URL:-}
+      - LLM_TOKEN=${LLM_TOKEN:-}
     volumes:
       # Используем БД с хоста (после seed: ./gradlew -p backend seed)
       - ./backend/data:/app/data

@@ -1,7 +1,14 @@
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectorRef,
+  ViewChild,
+  TemplateRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TuiButton, TuiLoader, TuiSurface } from '@taiga-ui/core';
+import { TuiButton, TuiLoader, TuiSurface, TuiDialogService } from '@taiga-ui/core';
 import { ReportsApiService } from '../../../services/reports-api.service';
 import type { ReportListItemDto } from '../../../models/report.model';
 
@@ -14,6 +21,10 @@ import type { ReportListItemDto } from '../../../models/report.model';
 })
 export class ReportsListComponent implements OnInit {
   @Input({ required: true }) unitId!: number;
+  @ViewChild('errorDialog') errorDialogTpl!: TemplateRef<{
+    $implicit: (value: void) => void;
+    data?: { message: string };
+  }>;
 
   reports: ReportListItemDto[] = [];
   loading = true;
@@ -22,7 +33,8 @@ export class ReportsListComponent implements OnInit {
 
   constructor(
     private readonly api: ReportsApiService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly dialogs: TuiDialogService
   ) {}
 
   ngOnInit(): void {
@@ -64,17 +76,41 @@ export class ReportsListComponent implements OnInit {
     event.stopPropagation();
     if (this.deletingId != null) return;
     this.deletingId = reportId;
+    this.cdr.markForCheck();
     this.api.delete(this.unitId, reportId).subscribe({
       next: () => {
         this.reports = this.reports.filter((r) => r.id !== reportId);
         this.deletingId = null;
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.error = 'Не удалось удалить отчёт';
+      error: (err: { status?: number; error?: { error?: string }; message?: string }) => {
+        const msg =
+          (err?.error && typeof err.error === 'object' && err.error?.error) ||
+          err?.message ||
+          'Не удалось удалить отчёт';
+        console.warn('[ReportsListComponent] deleteReport failed', {
+          unitId: this.unitId,
+          reportId,
+          status: err?.status,
+          error: err?.error,
+          message: msg,
+        });
         this.deletingId = null;
         this.cdr.markForCheck();
+        this.showErrorDialog(msg);
       },
     });
+  }
+
+  private showErrorDialog(message: string): void {
+    this.dialogs
+      .open(this.errorDialogTpl, {
+        label: 'Ошибка',
+        data: { message },
+        size: 's',
+        closeable: true,
+        dismissible: true,
+      })
+      .subscribe();
   }
 }

@@ -65,6 +65,8 @@ oper-review-prototype/
    Если видите `unknown flag: --build`, значит вызывается не compose — проверьте `docker compose version` или используйте `docker-compose`.
 3. Backend: http://localhost:8080, Frontend: http://localhost:4201
 
+**Переменные для LLM («Магия») при запуске в Colima:** контейнер не видит `~/.bash_profile`. Задайте `LLM_URL` и `LLM_TOKEN` в `.env` в корне проекта (Docker Compose подхватит их из `.env`) или экспортируйте в оболочке перед запуском.
+
 Если при `docker-compose up --build` появляются ошибки **docker-credential-desktop** или **buildx plugin**: перезапустите подготовку окружения `./scripts/setup-env-mac.sh` (скрипт поправит config.json и установит buildx). Либо вручную: `brew install docker-buildx docker-credential-helper` и в `~/.docker/config.json` заменить `"credsStore": "desktop"` на `"osxkeychain"`.
 
 **Ошибка `failed to receive status: rpc error: ... error reading from server: EOF`** при сборке обычно связана с обрывом соединения с BuildKit при параллельной сборке (таймаут или нехватка памяти). Решение: собирать образы по очереди, затем поднимать контейнеры:

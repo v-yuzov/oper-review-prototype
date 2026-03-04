@@ -1,3 +1,10 @@
+<ng-template #errorDialog let-observer="$implicit" let-data="data">
+  <p class="error-dialog__message">{{ data?.message ?? 'Не удалось удалить отчёт' }}</p>
+  <button tuiButton appearance="primary" size="m" (click)="observer.next()">
+    Понятно
+  </button>
+</ng-template>
+
 <div class="reports-list">
   @if (loading) {
     <div class="loading-wrap" aria-busy="true">

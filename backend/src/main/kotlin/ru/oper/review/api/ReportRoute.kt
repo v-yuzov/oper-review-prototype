@@ -271,7 +271,9 @@ fun Application.configureReportsRouting() {
         delete("/api/units/{unitId}/reports/{reportId}") {
             val unitId = call.parameters["unitId"]?.toIntOrNull()
             val reportId = call.parameters["reportId"]?.toIntOrNull()
+            log.info("DELETE report: unitId={}, reportId={}", unitId, reportId)
             if (unitId == null || reportId == null) {
+                log.warn("DELETE report: invalid id -> 400")
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid id"))
                 return@delete
             }
@@ -286,9 +288,11 @@ fun Application.configureReportsRouting() {
                 true
             }
             if (!deleted) {
+                log.warn("DELETE report: reportId={} not found or unitId mismatch -> 404", reportId)
                 call.respond(HttpStatusCode.NotFound, mapOf("error" to "Report not found"))
                 return@delete
             }
+            log.info("DELETE report: reportId={} deleted", reportId)
             call.respond(HttpStatusCode.NoContent)
         }
     }
