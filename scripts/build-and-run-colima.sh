@@ -60,37 +60,37 @@ ensure_colima_running() {
   log_info "Docker доступен, продолжаем."
 }
 
-# --- Команда compose (с диагностикой для удалённых машин) ---
+# --- Команда compose (диагностика в stderr, чтобы не попадала в cmd=$(get_compose_cmd)) ---
 get_compose_cmd() {
-  log_info "Проверяю наличие docker-compose (standalone)..."
+  log_info "Проверяю наличие docker-compose (standalone)..." >&2
   if check_cmd docker-compose; then
     if docker-compose version &>/dev/null; then
-      log_info "  docker-compose найден: $(docker-compose version --short 2>/dev/null || docker-compose version 2>&1 | head -1)"
+      log_info "  docker-compose найден: $(docker-compose version --short 2>/dev/null || docker-compose version 2>&1 | head -1)" >&2
       echo "docker-compose"
       return 0
     fi
-    log_warn "  docker-compose есть в PATH, но команда не выполняется (проверьте Docker)."
+    log_warn "  docker-compose есть в PATH, но команда не выполняется (проверьте Docker)." >&2
   else
-    log_info "  docker-compose не установлен."
+    log_info "  docker-compose не установлен." >&2
   fi
 
-  log_info "Проверяю наличие docker compose (плагин Docker CLI)..."
+  log_info "Проверяю наличие docker compose (плагин Docker CLI)..." >&2
   if check_cmd docker; then
     if docker compose version &>/dev/null; then
-      log_info "  docker compose найден: $(docker compose version --short 2>/dev/null || docker compose version 2>&1 | head -1)"
+      log_info "  docker compose найден: $(docker compose version --short 2>/dev/null || docker compose version 2>&1 | head -1)" >&2
       echo "docker compose"
       return 0
     fi
-    log_warn "  docker есть, но подкоманда 'compose' не найдена (нужен Docker Desktop или плагин compose)."
+    log_warn "  docker есть, но подкоманда 'compose' не найдена (нужен Docker Desktop или плагин compose)." >&2
   else
-    log_info "  docker не найден в PATH."
+    log_info "  docker не найден в PATH." >&2
   fi
 
-  log_error "Не найдена рабочая команда: ни docker-compose, ни docker compose."
-  echo ""
-  echo "  На macOS с Colima обычно достаточно Docker Desktop или установки Docker CLI + плагина compose."
-  echo "  Либо установите docker-compose отдельно: brew install docker-compose"
-  echo "  Затем при необходимости: ./scripts/setup-env-mac.sh"
+  log_error "Не найдена рабочая команда: ни docker-compose, ни docker compose." >&2
+  echo "" >&2
+  echo "  На macOS с Colima обычно достаточно Docker Desktop или установки Docker CLI + плагина compose." >&2
+  echo "  Либо установите docker-compose отдельно: brew install docker-compose" >&2
+  echo "  Затем при необходимости: ./scripts/setup-env-mac.sh" >&2
   exit 1
 }
 
