@@ -106,9 +106,9 @@ fun Application.configureLlmRouting() {
                     contentType(ContentType.Application.Json)
                     setBody(proxyBody)
                 }
-                val status = response.status
+                val status = response.status.value
                 val responseText = response.bodyAsText()
-                if (!status.isSuccess()) {
+                if (status !in 200..299) {
                     log.error("LLM proxy error: $status $responseText")
                     call.respond(
                         HttpStatusCode.BadGateway,
