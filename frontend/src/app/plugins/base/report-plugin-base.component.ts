@@ -165,7 +165,7 @@ export class ReportPluginBaseComponent {
     }
   }
 
-  /** Обработчик кнопки «Магия»: запрос к LLM с промптом плагина и данными графика, результат в llmMarkdown. */
+  /** Обработчик кнопки «Магия»: запрос к LLM с промптом плагина и данными графика, результат в llmMarkdown. При ошибке — текст ошибки в том же поле. */
   onLlmMagic(): void {
     if (this.llmLoading()) return;
     this.llmLoading.set(true);
@@ -179,7 +179,14 @@ export class ReportPluginBaseComponent {
           this.emitDataChange({ ...this.data, llmMarkdown: res.content });
           this.llmLoading.set(false);
         },
-        error: () => {
+        error: (err: { error?: { error?: string; details?: string }; message?: string }) => {
+          const errorBody = err?.error;
+          const parts: string[] = [];
+          if (errorBody?.error) parts.push(errorBody.error);
+          if (errorBody?.details) parts.push(errorBody.details);
+          if (parts.length === 0 && err?.message) parts.push(err.message);
+          const text = parts.length > 0 ? parts.join('\n\n') : 'Не удалось выполнить запрос к LLM.';
+          this.emitDataChange({ ...this.data, llmMarkdown: `**Ошибка LLM**\n\n${text}` });
           this.llmLoading.set(false);
         },
       });
