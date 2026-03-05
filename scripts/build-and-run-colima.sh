@@ -99,6 +99,14 @@ main() {
   local detach=""
   [[ "${1:-}" == "-d" ]] && detach="-d"
 
+  if [[ -f "${HOME}/.zshrc" ]]; then
+    set +u
+    # shellcheck source=/dev/null
+    source "${HOME}/.zshrc"
+    set -u
+    log_info "Загружен ~/.zshrc (переменные окружения для docker compose)."
+  fi
+
   echo ""
   log_info "========== Старт скрипта сборки и деплоя =========="
   log_info "Проект: ${PROJECT_ROOT}"

@@ -179,13 +179,16 @@ export class ReportPluginBaseComponent {
           this.emitDataChange({ ...this.data, llmMarkdown: res.content });
           this.llmLoading.set(false);
         },
-        error: (err: { error?: { error?: string; details?: string }; message?: string }) => {
+        error: (err: { error?: { error?: string; details?: string; debug?: string }; message?: string }) => {
           const errorBody = err?.error;
           const parts: string[] = [];
           if (errorBody?.error) parts.push(errorBody.error);
           if (errorBody?.details) parts.push(errorBody.details);
           if (parts.length === 0 && err?.message) parts.push(err.message);
-          const text = parts.length > 0 ? parts.join('\n\n') : 'Не удалось выполнить запрос к LLM.';
+          let text = parts.length > 0 ? parts.join('\n\n') : 'Не удалось выполнить запрос к LLM.';
+          if (errorBody?.debug) {
+            text += '\n\n--- Отладка ---\n' + errorBody.debug;
+          }
           this.emitDataChange({ ...this.data, llmMarkdown: `**Ошибка LLM**\n\n${text}` });
           this.llmLoading.set(false);
         },

@@ -2,6 +2,7 @@ package ru.oper.review.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -27,6 +28,10 @@ import kotlinx.serialization.json.jsonObject
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("ru.oper.review.api.LlmRoute")
+
+/** Маскирует токен: первые 10 символов + «…». */
+fun maskToken(token: String?): String =
+    token?.take(10)?.let { if (it.length == 10) "$it…" else it } ?: "(не задан)"
 
 @Serializable
 data class LlmAnalyzeRequest(
@@ -68,6 +73,11 @@ fun Application.configureLlmRouting() {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
         }
+        install(HttpTimeout) {
+            connectTimeoutMillis = 10_000   // 10s — как connect в httpx
+            requestTimeoutMillis = 120_000 // 120s — как read в httpx
+            socketTimeoutMillis = 120_000  // 120s — ожидание данных
+        }
         expectSuccess = false
     }
 
@@ -75,8 +85,8 @@ fun Application.configureLlmRouting() {
         post("/api/llm/analyze") {
             val body = call.receive<LlmAnalyzeRequest>()
             val requestUrl = "${baseUrl?.trimEnd('/') ?: "null"}/chat/completions"
-            val tokenPrefix = token?.take(10)?.let { "$it…" } ?: "(не задан)"
-            log.info("LLM request: url=$requestUrl, token=$tokenPrefix, pluginPrompt.length=${body.pluginPrompt.length}, chartDataJson.length=${body.chartDataJson?.length ?: 0}")
+            val tokenMasked = maskToken(token)
+            log.info("LLM request: url=$requestUrl, token=$tokenMasked, pluginPrompt.length=${body.pluginPrompt.length}, chartDataJson.length=${body.chartDataJson?.length ?: 0}")
 
             if (token.isNullOrBlank()) {
                 val msg = "LLM не настроен: задайте LLM_TOKEN (и при необходимости LLM_URL) в переменных окружения."
@@ -108,7 +118,7 @@ fun Application.configureLlmRouting() {
             )
             log.info("LLM proxy params: model=${proxyBody.model}, maxTokens=${proxyBody.maxTokens}, userContent.length=${userContent.length}")
             try {
-                val response = client.post("$baseUrl/chat/completions") {
+                val response = client.post(requestUrl) {
                     header(HttpHeaders.Authorization, "Bearer $token")
                     contentType(ContentType.Application.Json)
                     setBody(proxyBody)
@@ -117,10 +127,24 @@ fun Application.configureLlmRouting() {
                 val responseText = response.bodyAsText()
                 if (status !in 200..299) {
                     val details = responseText.take(1000)
-                    log.error("LLM proxy error: url=$requestUrl, status=$status, response=$details")
+                    val debug = buildString {
+                        appendLine("url=$requestUrl")
+                        appendLine("token=$tokenMasked")
+                        appendLine("status=$status")
+                        appendLine("responseLength=${responseText.length}")
+                        append("responseStart=").appendLine(details)
+                    }
+                    log.error(
+                        "LLM proxy error: url=$requestUrl, token=$tokenMasked, status=$status, " +
+                            "responseLength=${responseText.length}, responseStart=$details"
+                    )
                     call.respond(
                         HttpStatusCode.BadGateway,
-                        mapOf("error" to "LLM proxy вернул ошибку (код $status)", "details" to details)
+                        mapOf(
+                            "error" to "LLM proxy вернул ошибку (код $status)",
+                            "details" to details,
+                            "debug" to debug
+                        )
                     )
                     return@post
                 }
@@ -133,10 +157,30 @@ fun Application.configureLlmRouting() {
                 call.respond(LlmAnalyzeResponse(content = content))
             } catch (e: Exception) {
                 val errMsg = e.message ?: "LLM request failed"
-                log.error("LLM request failed: url=$requestUrl, token=$tokenPrefix, error=$errMsg", e)
+                val causeMsg = e.cause?.let { "${it.javaClass.simpleName}: ${it.message}" } ?: ""
+                log.error(
+                    "LLM request failed: url=$requestUrl, token=$tokenMasked, " +
+                        "exception=${e.javaClass.simpleName}, message=$errMsg, cause=$causeMsg",
+                    e
+                )
+                val detailsForClient = buildString {
+                    append(errMsg)
+                    if (causeMsg.isNotBlank()) append("; cause: $causeMsg")
+                }
+                val debug = buildString {
+                    appendLine("url=$requestUrl")
+                    appendLine("token=$tokenMasked")
+                    appendLine("exception=${e.javaClass.simpleName}")
+                    appendLine("message=$errMsg")
+                    if (causeMsg.isNotBlank()) appendLine("cause=$causeMsg")
+                }
                 call.respond(
                     HttpStatusCode.BadGateway,
-                    mapOf("error" to "Ошибка запроса к LLM", "details" to errMsg)
+                    mapOf(
+                        "error" to "Ошибка запроса к LLM",
+                        "details" to detailsForClient,
+                        "debug" to debug
+                    )
                 )
             }
         }
