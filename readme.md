@@ -44,6 +44,8 @@ oper-review-prototype/
 
 ## Запуск (Colima)
 
+Для контейнеров нужны только **Colima** и **Docker CLI** (команды `docker`, `docker compose`). Docker Desktop не обязателен — Colima поднимает свой daemon.
+
 **Подготовка окружения на macOS:** скрипт проверит и при необходимости установит через Homebrew: Homebrew, Colima, Docker CLI, Docker Compose; при необходимости запустит Colima. Сборку и деплой не выполняет:
 ```bash
 ./scripts/setup-env-mac.sh

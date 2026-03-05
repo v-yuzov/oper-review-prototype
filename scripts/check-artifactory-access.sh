@@ -71,16 +71,19 @@ else
 fi
 echo ""
 
-echo "=== 4. Доступ к Artifactory из контейнера (Docker) ==="
-if command -v docker &>/dev/null && docker info &>/dev/null; then
-  if docker run --rm curlimages/curl:latest curl -sSf --connect-timeout 10 -o /dev/null -w "  HTTP %{http_code}\n" "${ARTIFACTORY_MAVEN_URL}" 2>/dev/null; then
-    echo "  Доступ из контейнера есть"
+echo "=== 4. Доступ к Artifactory из контейнера (Docker/Colima) ==="
+if command -v docker &>/dev/null && docker info &>/dev/null 2>/dev/null; then
+  out=$(docker run --rm curlimages/curl:latest curl -sS --connect-timeout 10 -o /dev/null -w "%{http_code}" "${ARTIFACTORY_MAVEN_URL}" 2>&1) || true
+  if [[ "$out" =~ ^[0-9]{3}$ ]]; then
+    echo "  HTTP ${out} — доступ из контейнера есть"
+  elif echo "$out" | grep -qE "Unable to find image|failed to resolve|certificate signed by unknown authority|Error response from daemon"; then
+    echo "  Образ curl с Docker Hub недоступен (x509/сеть). Проверка из контейнера пропущена."
+    echo "  Если п.3 показал, что с хоста Artifactory доступен — сборка backend должна проходить (Gradle в контейнере ходит по той же сети)."
   else
-    echo "  Ошибка или образ curl недоступен (на маке без доступа в интернет образ не скачается)"
-    echo "  Вручную: docker run --rm curlimages/curl:latest curl -sS -o /dev/null -w '%{http_code}' ${ARTIFACTORY_MAVEN_URL}"
+    echo "  Ошибка: $out"
   fi
 else
-  echo "  Docker недоступен или не запущен"
+  echo "  Docker недоступен (запустите Colima: colima start)"
 fi
 echo ""
 
@@ -93,4 +96,5 @@ else
   echo "  Запустите: docker compose config (и посмотрите секцию backend.build.args)"
 fi
 echo ""
-echo "Готово. Если с хоста доступ есть, а из контейнера нет — проверьте сеть Docker (Colima/VPN)."
+echo "Готово. Docker-команды работают через Colima (colima start)."
+echo "Если Docker Hub недоступен (x509) — образы для проверки п.4 не скачаются; при доступном Artifactory с хоста (п.3) сборка backend обычно проходит."
