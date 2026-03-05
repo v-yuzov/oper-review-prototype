@@ -80,6 +80,13 @@ docker compose build backend && docker compose build frontend && docker compose 
 2. VPN/прокси: отключите VPN или настройте прокси для Docker (переменные окружения в Dockerfile или docker-compose).
 3. Обходной путь — собрать backend на хосте и не тянуть зависимости в Docker: в `backend/` выполнить `./gradlew installDist`, затем собрать только frontend: `docker compose build frontend && docker compose up -d` — backend при этом не пересоберётся; для полной пересборки backend нужна сеть в Docker.
 
+**Доступ только к Artifactory (нет доступа к Docker Hub или ошибка x509 при пулле образов):** базовые образы backend можно брать из внутреннего Docker-реестра. В `.env` в корне проекта задайте:
+```bash
+GRADLE_BASE_IMAGE=<ваш-registry>/gradle:9.0.0-jdk21
+RUNTIME_BASE_IMAGE=<ваш-registry>/eclipse-temurin:21-jre-alpine
+```
+Подставьте URL образов из Artifactory (или другого корпоративного реестра), совместимых по тегам с официальными. Затем `docker compose build backend` или `./scripts/build-and-run-colima.sh`. При необходимости добавьте корпоративный CA в доверенные для Docker (ошибка `certificate signed by unknown authority`).
+
 Локальная разработка без Docker:
 - Backend: в `backend/` при первом запуске сгенерируйте wrapper: `gradle wrapper --gradle-version 9.0`, затем `./gradlew run`. Либо собирайте через Docker.
 - Frontend: `cd frontend && npm install && npm start`

@@ -1,6 +1,10 @@
-# Сборка: образ с Gradle 9 и JDK 21 (тег без alpine — официальный на Docker Hub)
-# Передать учётные данные Artifactory при сборке: docker build --build-arg ARTIFACTORY_USERNAME=... --build-arg ARTIFACTORY_PASSWORD=...
-FROM gradle:9.0.0-jdk21 AS build
+# Базовые образы по умолчанию — Docker Hub. При доступе только к Artifactory задать через build-arg:
+#   GRADLE_BASE_IMAGE=...  RUNTIME_BASE_IMAGE=...  (URL образов из внутреннего Docker-реестра)
+# Учётные данные Artifactory для Gradle: ARTIFACTORY_USERNAME, ARTIFACTORY_PASSWORD
+ARG GRADLE_BASE_IMAGE=gradle:9.0.0-jdk21
+ARG RUNTIME_BASE_IMAGE=eclipse-temurin:21-jre-alpine
+
+FROM ${GRADLE_BASE_IMAGE} AS build
 WORKDIR /app
 
 ARG ARTIFACTORY_USERNAME
@@ -15,7 +19,7 @@ COPY src src
 RUN gradle --no-daemon installDist
 
 # Рантайм
-FROM eclipse-temurin:21-jre-alpine
+FROM ${RUNTIME_BASE_IMAGE}
 WORKDIR /app
 
 RUN adduser -D -h /app appuser

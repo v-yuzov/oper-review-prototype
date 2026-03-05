@@ -5,6 +5,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
+        GRADLE_BASE_IMAGE: ${GRADLE_BASE_IMAGE:-gradle:9.0.0-jdk21}
+        RUNTIME_BASE_IMAGE: ${RUNTIME_BASE_IMAGE:-eclipse-temurin:21-jre-alpine}
         ARTIFACTORY_USERNAME: ${ARTIFACTORY_USERNAME:-}
         ARTIFACTORY_PASSWORD: ${ARTIFACTORY_PASSWORD:-}
     restart: unless-stopped
