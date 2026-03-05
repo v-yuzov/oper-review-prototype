@@ -69,6 +69,8 @@ oper-review-prototype/
 
 **Переменные для LLM («Магия») при запуске в Colima:** контейнер не видит `~/.bash_profile`. Задайте `LLM_URL` и `LLM_TOKEN` в `.env` в корне проекта (Docker Compose подхватит их из `.env`) или экспортируйте в оболочке перед запуском.
 
+**Как локализовать 502 при «Магии» на удалённой машине:** при ошибке запроса к LLM в логах backend пишется строка `LLM ERROR:` с кратким описанием (сеть, таймаут, SSL и т.д.). Что сделать: 1) Логи backend: `docker compose logs backend --tail=300` и найти строку `LLM ERROR:` — там будет причина (например `ConnectTimeoutException`, `SSLHandshakeException`, `Connection refused`). 2) В интерфейсе в блоке «Анализ данных (LLM)» после нажатия «Магия» при ошибке выводится текст с блоком «--- Отладка ---» (url, маскированный токен, сообщение об ошибке). 3) Проверить доступность LLM-прокси с хоста: `curl -sS -o /dev/null -w "%{http_code}" --connect-timeout 5 "$LLM_URL"` (если переменная задана).
+
 Если при `docker-compose up --build` появляются ошибки **docker-credential-desktop** или **buildx plugin**: перезапустите подготовку окружения `./scripts/setup-env-mac.sh` (скрипт поправит config.json и установит buildx). Либо вручную: `brew install docker-buildx docker-credential-helper` и в `~/.docker/config.json` заменить `"credsStore": "desktop"` на `"osxkeychain"`.
 
 **Ошибка `failed to receive status: rpc error: ... error reading from server: EOF`** при сборке обычно связана с обрывом соединения с BuildKit при параллельной сборке (таймаут или нехватка памяти). Решение: собирать образы по очереди, затем поднимать контейнеры:

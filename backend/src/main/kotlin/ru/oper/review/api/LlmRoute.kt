@@ -33,6 +33,17 @@ private val log = LoggerFactory.getLogger("ru.oper.review.api.LlmRoute")
 fun maskToken(token: String?): String =
     token?.take(10)?.let { if (it.length == 10) "$it…" else it } ?: "(не задан)"
 
+/** Собирает цепочку cause в одну строку для лога (корневая причина в конце). */
+private fun Throwable.causeChain(): String {
+    val parts = mutableListOf("$javaClass.simpleName: ${message ?: ""}")
+    var c: Throwable? = cause
+    while (c != null) {
+        parts.add("  <- ${c.javaClass.simpleName}: ${c.message ?: ""}")
+        c = c.cause
+    }
+    return parts.joinToString(" ")
+}
+
 @Serializable
 data class LlmAnalyzeRequest(
     val pluginPrompt: String,
@@ -156,23 +167,14 @@ fun Application.configureLlmRouting() {
                 log.info("LLM success: content.length=${content.length}")
                 call.respond(LlmAnalyzeResponse(content = content))
             } catch (e: Exception) {
-                val errMsg = e.message ?: "LLM request failed"
-                val causeMsg = e.cause?.let { "${it.javaClass.simpleName}: ${it.message}" } ?: ""
-                log.error(
-                    "LLM request failed: url=$requestUrl, token=$tokenMasked, " +
-                        "exception=${e.javaClass.simpleName}, message=$errMsg, cause=$causeMsg",
-                    e
-                )
-                val detailsForClient = buildString {
-                    append(errMsg)
-                    if (causeMsg.isNotBlank()) append("; cause: $causeMsg")
-                }
+                val chain = e.causeChain()
+                log.error("LLM ERROR: $chain")
+                log.error("LLM request failed: url=$requestUrl, token=$tokenMasked", e)
+                val detailsForClient = chain
                 val debug = buildString {
                     appendLine("url=$requestUrl")
                     appendLine("token=$tokenMasked")
-                    appendLine("exception=${e.javaClass.simpleName}")
-                    appendLine("message=$errMsg")
-                    if (causeMsg.isNotBlank()) appendLine("cause=$causeMsg")
+                    appendLine("error=$chain")
                 }
                 call.respond(
                     HttpStatusCode.BadGateway,
