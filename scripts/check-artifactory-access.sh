@@ -11,7 +11,15 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ARTIFACTORY_HOST="artifactory.tcsbank.ru"
 ARTIFACTORY_MAVEN_URL="https://${ARTIFACTORY_HOST}/artifactory/maven-proxy/"
 
-echo "=== 1. Переменные окружения (ARTIFACTORY_*, GRADLE_BASE_IMAGE) ==="
+# Подгружаем .env, чтобы окружение совпадало с тем, что видит docker compose
+if [[ -f "${PROJECT_ROOT}/.env" ]]; then
+  set +u
+  # shellcheck source=/dev/null
+  source "${PROJECT_ROOT}/.env" 2>/dev/null || true
+  set -u
+fi
+
+echo "=== 1. Переменные окружения (после загрузки .env) ==="
 if [[ -n "${ARTIFACTORY_USERNAME:-}" ]]; then
   echo "  ARTIFACTORY_USERNAME задан (длина=${#ARTIFACTORY_USERNAME})"
 else
@@ -22,23 +30,28 @@ if [[ -n "${ARTIFACTORY_PASSWORD:-}" ]]; then
 else
   echo "  ARTIFACTORY_PASSWORD не задан"
 fi
-echo "  GRADLE_BASE_IMAGE=${GRADLE_BASE_IMAGE:-<не задан>}"
-echo "  RUNTIME_BASE_IMAGE=${RUNTIME_BASE_IMAGE:-<не задан>}"
+if [[ -n "${GRADLE_BASE_IMAGE:-}" ]]; then
+  echo "  GRADLE_BASE_IMAGE=${GRADLE_BASE_IMAGE}"
+else
+  echo "  GRADLE_BASE_IMAGE=<не задан>"
+fi
+if [[ -n "${RUNTIME_BASE_IMAGE:-}" ]]; then
+  echo "  RUNTIME_BASE_IMAGE=${RUNTIME_BASE_IMAGE}"
+else
+  echo "  RUNTIME_BASE_IMAGE=<не задан>"
+fi
 echo ""
 
-echo "=== 2. Файл .env в корне проекта ==="
+echo "=== 2. Содержимое .env (ключи, без значений секретов) ==="
 if [[ -f "${PROJECT_ROOT}/.env" ]]; then
   echo "  .env существует"
-  if grep -q "ARTIFACTORY_USERNAME" "${PROJECT_ROOT}/.env" 2>/dev/null; then
-    echo "  ARTIFACTORY_USERNAME есть в .env"
-  else
-    echo "  ARTIFACTORY_USERNAME нет в .env"
-  fi
-  if grep -q "ARTIFACTORY_PASSWORD" "${PROJECT_ROOT}/.env" 2>/dev/null; then
-    echo "  ARTIFACTORY_PASSWORD есть в .env"
-  else
-    echo "  ARTIFACTORY_PASSWORD нет в .env"
-  fi
+  for key in ARTIFACTORY_USERNAME ARTIFACTORY_PASSWORD GRADLE_BASE_IMAGE RUNTIME_BASE_IMAGE LLM_TOKEN LLM_URL; do
+    if grep -qE "^${key}=|^export ${key}=" "${PROJECT_ROOT}/.env" 2>/dev/null; then
+      echo "  ${key}=... (есть)"
+    else
+      echo "  ${key}: нет в .env"
+    fi
+  done
 else
   echo "  .env не найден"
 fi
@@ -46,10 +59,11 @@ echo ""
 
 echo "=== 3. Доступ к Artifactory с хоста (curl) ==="
 if command -v curl &>/dev/null; then
-  if curl -sSf --connect-timeout 5 -o /dev/null -w "  HTTP %{http_code}, время %{time_total}s\n" "${ARTIFACTORY_MAVEN_URL}" 2>/dev/null; then
-    echo "  Доступ с хоста есть"
+  code=$(curl -sS --connect-timeout 5 -o /dev/null -w "%{http_code}" "${ARTIFACTORY_MAVEN_URL}" 2>/dev/null || echo "000")
+  if [[ "$code" != "000" ]]; then
+    echo "  HTTP ${code} — сервер доступен (2xx/4xx = ответ получен)"
   else
-    echo "  Ошибка доступа с хоста (таймаут, сеть или 401/403)"
+    echo "  Таймаут или сеть — сервер недоступен с хоста"
     echo "  Проверьте VPN и сеть."
   fi
 else
