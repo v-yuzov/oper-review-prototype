@@ -1,7 +1,7 @@
 rootProject.name = "oper-review-backend"
 
-// Учётные данные Artifactory (опционально): ARTIFACTORY_USERNAME, ARTIFACTORY_PASSWORD.
-// Читаем в каждом блоке через System.getenv — в settings.gradle.kts вложенные блоки не видят top-level переменные.
+// Репозитории соответствуют Maven settings.xml (mirror central → maven-proxy; tinkoff-maven-releases-hosted; ins-integration).
+// Учётные данные (опционально): ARTIFACTORY_USERNAME, ARTIFACTORY_PASSWORD. Читаем через System.getenv в каждом блоке.
 
 // Сначала внешние репозитории; при недоступности (например, в корп. сети) Gradle перейдёт к Artifactory
 pluginManagement {

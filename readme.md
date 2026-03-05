@@ -80,12 +80,31 @@ docker compose build backend && docker compose build frontend && docker compose 
 2. VPN/прокси: отключите VPN или настройте прокси для Docker (переменные окружения в Dockerfile или docker-compose).
 3. Обходной путь — собрать backend на хосте и не тянуть зависимости в Docker: в `backend/` выполнить `./gradlew installDist`, затем собрать только frontend: `docker compose build frontend && docker compose up -d` — backend при этом не пересоберётся; для полной пересборки backend нужна сеть в Docker.
 
-**Доступ только к Artifactory (нет доступа к Docker Hub или ошибка x509 при пулле образов):** базовые образы backend можно брать из внутреннего Docker-реестра. В `.env` в корне проекта задайте:
-```bash
-GRADLE_BASE_IMAGE=<ваш-registry>/gradle:9.0.0-jdk21
-RUNTIME_BASE_IMAGE=<ваш-registry>/eclipse-temurin:21-jre-alpine
-```
-Подставьте URL образов из Artifactory (или другого корпоративного реестра), совместимых по тегам с официальными. Затем `docker compose build backend` или `./scripts/build-and-run-colima.sh`. При необходимости добавьте корпоративный CA в доверенные для Docker (ошибка `certificate signed by unknown authority`).
+**Доступ только к Artifactory (нет доступа к Docker Hub или ошибка x509 при пулле образов):** базовые образы backend можно брать из внутреннего Docker-реестра.
+
+1. **Узнайте точный путь к образам** в вашем Artifactory: путь вида `artifactory.tcsbank.ru/docker/...` часто неверный. Обычно это что-то вроде:
+   - `artifactory.tcsbank.ru/docker-virtual/gradle:9.0.0-jdk21` или
+   - `artifactory.tcsbank.ru/docker-remote/library/gradle:9.0.0-jdk21`
+   Откройте Artifactory → Docker-репозиторий → найдите образы `gradle` и `eclipse-temurin` (или аналог), скопируйте полное имя образа с тегом.
+
+2. **Залогиньтесь в реестр** (если репозиторий приватный):
+   ```bash
+   docker login artifactory.tcsbank.ru
+   ```
+   Введите учётные данные Artifactory.
+
+3. В `.env` в корне проекта задайте **реальные** пути (без `export`):
+   ```
+   GRADLE_BASE_IMAGE=artifactory.tcsbank.ru/<репо>/gradle:9.0.0-jdk21
+   RUNTIME_BASE_IMAGE=artifactory.tcsbank.ru/<репо>/eclipse-temurin:21-jre-alpine
+   ```
+   Либо через оболочку: `export GRADLE_BASE_IMAGE=...` и `export RUNTIME_BASE_IMAGE=...`.
+
+4. Если таких образов в Artifactory нет — попросите админов настроить зеркало Docker Hub или выложить нужные образы; либо соберите backend локально без Docker: `cd backend && ./gradlew installDist`, затем используйте уже собранный артефакт (без пересборки backend в Docker).
+
+При ошибке `certificate signed by unknown authority` добавьте корпоративный CA в доверенные для Docker/Colima.
+
+**Проверка доступа к Artifactory и учётных данных:** из корня проекта запустите `./scripts/check-artifactory-access.sh`. Скрипт покажет, заданы ли переменные, есть ли `.env`, доступен ли Artifactory с хоста и из контейнера, и какие build-args видит compose.
 
 Локальная разработка без Docker:
 - Backend: в `backend/` при первом запуске сгенерируйте wrapper: `gradle wrapper --gradle-version 9.0`, затем `./gradlew run`. Либо собирайте через Docker.
