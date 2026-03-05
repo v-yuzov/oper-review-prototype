@@ -1,6 +1,12 @@
 # Сборка: образ с Gradle 9 и JDK 21 (тег без alpine — официальный на Docker Hub)
+# Передать учётные данные Artifactory при сборке: docker build --build-arg ARTIFACTORY_USERNAME=... --build-arg ARTIFACTORY_PASSWORD=...
 FROM gradle:9.0.0-jdk21 AS build
 WORKDIR /app
+
+ARG ARTIFACTORY_USERNAME
+ARG ARTIFACTORY_PASSWORD
+ENV ARTIFACTORY_USERNAME=${ARTIFACTORY_USERNAME}
+ENV ARTIFACTORY_PASSWORD=${ARTIFACTORY_PASSWORD}
 
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
 RUN gradle --no-daemon dependencies --refresh-dependencies || true

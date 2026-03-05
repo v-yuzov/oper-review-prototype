@@ -17,17 +17,15 @@ java {
 val artifactoryUsername = project.findProperty("artifactoryUsername") as String? ?: System.getenv("ARTIFACTORY_USERNAME") ?: ""
 val artifactoryPassword = project.findProperty("artifactoryPassword") as String? ?: System.getenv("ARTIFACTORY_PASSWORD") ?: ""
 
+// Порядок репозиториев задаётся в settings.gradle.kts (PREFER_SETTINGS). Здесь — запас на случай без settings.
 repositories {
-    // Artifactory: зеркало Maven Central и хосты (как в settings.xml)
+    mavenCentral()
     maven {
         name = "maven-proxy"
         url = uri("https://artifactory.tcsbank.ru/artifactory/maven-proxy/")
         isAllowInsecureProtocol = false
         if (artifactoryUsername.isNotBlank()) {
-            credentials {
-                username = artifactoryUsername
-                password = artifactoryPassword
-            }
+            credentials { username = artifactoryUsername; password = artifactoryPassword }
         }
     }
     maven {
@@ -35,10 +33,7 @@ repositories {
         url = uri("https://artifactory.tcsbank.ru/artifactory/maven-all/")
         isAllowInsecureProtocol = false
         if (artifactoryUsername.isNotBlank()) {
-            credentials {
-                username = artifactoryUsername
-                password = artifactoryPassword
-            }
+            credentials { username = artifactoryUsername; password = artifactoryPassword }
         }
     }
     maven {
@@ -46,13 +41,9 @@ repositories {
         url = uri("https://artifactory.tcsbank.ru/artifactory/maven-all/ins-integration/")
         isAllowInsecureProtocol = false
         if (artifactoryUsername.isNotBlank()) {
-            credentials {
-                username = artifactoryUsername
-                password = artifactoryPassword
-            }
+            credentials { username = artifactoryUsername; password = artifactoryPassword }
         }
     }
-    mavenCentral()
 }
 
 val ktorVersion = "3.0.3"

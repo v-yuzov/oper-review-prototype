@@ -4,6 +4,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        ARTIFACTORY_USERNAME: ${ARTIFACTORY_USERNAME:-}
+        ARTIFACTORY_PASSWORD: ${ARTIFACTORY_PASSWORD:-}
     restart: unless-stopped
     ports:
       - "8080:8080"
