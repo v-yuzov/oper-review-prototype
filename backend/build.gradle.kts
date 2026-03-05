@@ -12,7 +12,46 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+// Учётные данные Artifactory (опционально): gradle.properties (artifactoryUsername, artifactoryPassword)
+// или переменные окружения ARTIFACTORY_USERNAME, ARTIFACTORY_PASSWORD
+val artifactoryUsername = project.findProperty("artifactoryUsername") as String? ?: System.getenv("ARTIFACTORY_USERNAME") ?: ""
+val artifactoryPassword = project.findProperty("artifactoryPassword") as String? ?: System.getenv("ARTIFACTORY_PASSWORD") ?: ""
+
 repositories {
+    // Artifactory: зеркало Maven Central и хосты (как в settings.xml)
+    maven {
+        name = "maven-proxy"
+        url = uri("https://artifactory.tcsbank.ru/artifactory/maven-proxy/")
+        isAllowInsecureProtocol = false
+        if (artifactoryUsername.isNotBlank()) {
+            credentials {
+                username = artifactoryUsername
+                password = artifactoryPassword
+            }
+        }
+    }
+    maven {
+        name = "tinkoff-maven-releases-hosted"
+        url = uri("https://artifactory.tcsbank.ru/artifactory/maven-all/")
+        isAllowInsecureProtocol = false
+        if (artifactoryUsername.isNotBlank()) {
+            credentials {
+                username = artifactoryUsername
+                password = artifactoryPassword
+            }
+        }
+    }
+    maven {
+        name = "ins-integration-maven-releases-hosted"
+        url = uri("https://artifactory.tcsbank.ru/artifactory/maven-all/ins-integration/")
+        isAllowInsecureProtocol = false
+        if (artifactoryUsername.isNotBlank()) {
+            credentials {
+                username = artifactoryUsername
+                password = artifactoryPassword
+            }
+        }
+    }
     mavenCentral()
 }
 
