@@ -69,7 +69,40 @@ oper-review-prototype/
 
 **Переменные для LLM («Магия») при запуске в Colima:** контейнер не видит `~/.bash_profile`. Задайте `LLM_URL` и `LLM_TOKEN` в `.env` в корне проекта (Docker Compose подхватит их из `.env`) или экспортируйте в оболочке перед запуском.
 
-**Как локализовать 502 при «Магии» на удалённой машине:** при ошибке запроса к LLM в логах backend пишется строка `LLM ERROR:` с кратким описанием (сеть, таймаут, SSL и т.д.). Что сделать: 1) Логи backend: `docker compose logs backend --tail=300` и найти строку `LLM ERROR:` — там будет причина (например `ConnectTimeoutException`, `SSLHandshakeException`, `Connection refused`). 2) В интерфейсе в блоке «Анализ данных (LLM)» после нажатия «Магия» при ошибке выводится текст с блоком «--- Отладка ---» (url, маскированный токен, сообщение об ошибке). 3) Проверить доступность LLM-прокси с хоста: `curl -sS -o /dev/null -w "%{http_code}" --connect-timeout 5 "$LLM_URL"` (если переменная задана).
+**Как локализовать 502 при «Магии» на удалённой машине** — выполните в терминале по порядку:
+
+1. **Найти причину в логах backend** (строка `LLM ERROR:` идёт перед stack trace):
+   ```bash
+   docker compose logs backend --tail=500 2>&1 | grep -E "LLM ERROR|LLM request failed|Exception|Error"
+   ```
+   Если пусто — посмотрите полный вывод и ищите сообщение об ошибке выше stack trace:
+   ```bash
+   docker compose logs backend --tail=500
+   ```
+
+2. **Проверить, что backend видит LLM_URL и LLM_TOKEN:**
+   ```bash
+   docker compose exec backend env | grep -E "LLM_URL|LLM_TOKEN"
+   ```
+   (LLM_TOKEN покажется целиком — только на своей машине.)
+
+3. **Проверить доступность LLM-прокси с хоста** (подставьте свой URL из .env или вывода п.2):
+   ```bash
+   curl -sS -o /dev/null -w "%{http_code}\n" --connect-timeout 10 "https://llm-proxy.t-tech.team/"
+   ```
+   Код 000 = таймаут/сеть, 4xx/5xx = сервер ответил.
+
+4. **Проверить доступ из контейнера** (если на хосте curl есть):
+   ```bash
+   docker compose exec backend sh -c 'wget -q -O - --timeout=5 "$LLM_URL" 2>&1 | head -1'
+   ```
+   или без wget: посмотрите логи после повторного нажатия «Магия» — в интерфейсе в блоке «Анализ данных (LLM)» при ошибке выводится «--- Отладка ---» с url и текстом ошибки.
+
+5. **Воспроизвести ошибку и сразу смотреть логи:**
+   ```bash
+   docker compose logs -f backend
+   ```
+   В другом окне нажать «Магия» в отчёте; в первом окне появится новая запись с ошибкой.
 
 Если при `docker-compose up --build` появляются ошибки **docker-credential-desktop** или **buildx plugin**: перезапустите подготовку окружения `./scripts/setup-env-mac.sh` (скрипт поправит config.json и установит buildx). Либо вручную: `brew install docker-buildx docker-credential-helper` и в `~/.docker/config.json` заменить `"credsStore": "desktop"` на `"osxkeychain"`.
 

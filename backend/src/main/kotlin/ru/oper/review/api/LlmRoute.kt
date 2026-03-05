@@ -95,7 +95,7 @@ fun Application.configureLlmRouting() {
     routing {
         post("/api/llm/analyze") {
             val body = call.receive<LlmAnalyzeRequest>()
-            val requestUrl = "${baseUrl?.trimEnd('/') ?: "null"}/chat/completions"
+            val requestUrl = baseUrl?.trimEnd('/') ?: "null"
             val tokenMasked = maskToken(token)
             log.info("LLM request: url=$requestUrl, token=$tokenMasked, pluginPrompt.length=${body.pluginPrompt.length}, chartDataJson.length=${body.chartDataJson?.length ?: 0}")
 
