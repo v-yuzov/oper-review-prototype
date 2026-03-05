@@ -1,12 +1,17 @@
 # Сборка: образ с Gradle 9 и JDK 21
+# Кэш Gradle (--mount=type=cache) сохраняется между сборками — зависимости не перекачиваются при каждом build
 FROM gradle:9.0.0-jdk21 AS build
 WORKDIR /app
 
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
-RUN gradle --no-daemon dependencies --refresh-dependencies || true
+RUN --mount=type=cache,target=/root/.gradle/caches \
+    --mount=type=cache,target=/root/.gradle/wrapper \
+    gradle --no-daemon dependencies
 
 COPY src src
-RUN gradle --no-daemon installDist
+RUN --mount=type=cache,target=/root/.gradle/caches \
+    --mount=type=cache,target=/root/.gradle/wrapper \
+    gradle --no-daemon installDist
 
 # Рантайм
 FROM eclipse-temurin:21-jre-alpine
